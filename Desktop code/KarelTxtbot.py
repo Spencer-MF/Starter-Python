@@ -1,5 +1,5 @@
 
-from niceToHaves import Utility
+from utility import Utility
 
 # constants, size of the play area 3 by 3 where this is the upper bound not included in play area
 N_ROWS_PULS_1 = 4

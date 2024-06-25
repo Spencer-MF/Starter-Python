@@ -1,5 +1,5 @@
 import math
-from niceToHaves import Utility
+from utility import Utility
 
 def main():
     operation = int(input("select an operation to perform: \n1. Add\n2. Subtract\n3. Multiply\n4. Divide\n5. Divide with remainder\n6. Exponential\n7. N root\n8. Log base\n"))

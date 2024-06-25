@@ -1,6 +1,6 @@
 
 import random
-from niceToHaves import Utility
+from utility import Utility
 
 def question():
     print('this program averages two numbers')
