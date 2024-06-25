@@ -1,5 +1,5 @@
 import math
-from niceToHaves import restartCode
+from niceToHaves import Utility
 
 def main():
     operation = int(input("select an operation to perform: \n1. Add\n2. Subtract\n3. Multiply\n4. Divide\n5. Divide with remainder\n6. Exponential\n7. N root\n8. Log base\n"))
@@ -68,4 +68,4 @@ def log_base(num1, base):
     awns = math.log(num1, base)
     return awns
 
-restartCode(main)
+Utility.restartCode(main)

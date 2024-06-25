@@ -1,6 +1,6 @@
 
 import random
-from niceToHaves import *
+from niceToHaves import Utility
 
 def question():
     print('this program averages two numbers')
@@ -38,5 +38,5 @@ def main():
     else:
         print('invalid input try again')
 
-restartCode(main)
+Utility.restartCode(main)
     

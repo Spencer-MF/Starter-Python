@@ -1,5 +1,5 @@
 
-from niceToHaves import restartCode
+from niceToHaves import Utility
 
 # constants, size of the play area 3 by 3 where this is the upper bound not included in play area
 N_ROWS_PULS_1 = 4
@@ -81,4 +81,4 @@ def turn_left(facing_col, facing_row, times_turned):
 # There is no need to edit code beyond this point
 
 
-restartCode(main)
+Utility.restartCode(main)

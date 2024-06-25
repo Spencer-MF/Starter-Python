@@ -1,5 +1,5 @@
 from fibinachiSq import FibinachiSq, FibFor
-from niceToHaves import restartCode
+from niceToHaves import Utility
 
 def main():       
         n = input("what digit of the fibinachi squence would you like to know: ")
@@ -14,4 +14,4 @@ def main():
             
 
 
-restartCode(main)
+Utility.restartCode(main)
