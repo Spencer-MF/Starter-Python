@@ -160,7 +160,7 @@ class ttoLogic:
 
     def draw(self):
             self.canvas.create_text(SQUARE_SIZE * 1.5, SQUARE_SIZE,
-                            text=f'Game over X O\n  draw!',
+                            text=f'  Game over X O\n  draw!',
                             font=('Terminal', TEXT_SIZE),
                             fill='black'
                            )
