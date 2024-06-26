@@ -26,13 +26,7 @@ class ttoLogic:
         self.x = event.x // SQUARE_SIZE
         self.y = event.y // SQUARE_SIZE
 
-        self.game_win()
-        if self.game_won:
-            self.win()
-        elif self.turn == 9:
-            print('draw')
-        else:
-            self.turns()
+        self.turns()
 
     def turns(self):
         if self.x is not None and self.y is not None:
@@ -44,7 +38,11 @@ class ttoLogic:
             else:
                 self.turn += 1
                 ttoLogic.circle(self, self.x, self.y)
-        
+        self.game_win()
+        if self.game_won:
+            self.win()
+        elif self.turn == 9:
+            self.draw()
     def game(self, canvas):
         ttoLogic.play_grid(canvas)
 
@@ -87,17 +85,23 @@ class ttoLogic:
         top_y = (start - 1) // 3 * SQUARE_SIZE + SQUARE_SIZE / 2
         end_x = (end - 1) % 3 * SQUARE_SIZE + SQUARE_SIZE / 2
         end_y = (end - 1) // 3 * SQUARE_SIZE + SQUARE_SIZE / 2
-        self.canvas.create_line(top_x, top_y, end_x, end_y, fill='lime', width=5)
+        self.canvas.create_line(top_x, top_y, end_x, end_y, fill='lime', width=7)
         self.canvas.unbind('<Button-1>')
         self.game_over(player)
 
     def game_over(self,player):
-            self.canvas.create_text(SQUARE_SIZE, SQUARE_SIZE,
+            self.canvas.create_text(SQUARE_SIZE * 1.5, SQUARE_SIZE,
                             text=f'Game over {player} \n  wins!',
                             font=('Terminal', 100),
                             fill='black'
                            )
 
+    def draw(self):
+            self.canvas.create_text(SQUARE_SIZE * 1.5, SQUARE_SIZE,
+                            text=f'Game over X O\n  draw!',
+                            font=('Terminal', 100),
+                            fill='black'
+                           )
 
 
     def play_grid(canvas):
