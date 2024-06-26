@@ -74,12 +74,13 @@ class ttoLogic:
                 self.turn += 1
                 x, y = self.eval()
                 self.circle(x, y)
-            self.game_win()
+        self.game_win()
         if self.game_won:
             self.win()
+            return None
         elif self.turn == 9:
             self.draw()
-        if self.AI_turns % 2 == 0:
+        elif self.AI_turns % 2 == 0:
             self.turns_pve()
 
     def board_state(self):
