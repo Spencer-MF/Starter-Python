@@ -1,8 +1,9 @@
 import tkinter as tk
 
-CANVAS_SIZE = 1000
+CANVAS_SIZE = 1100
 SQUARE_SIZE = CANVAS_SIZE // 3
 IN_BOARDER = 10
+TEXT_SIZE = CANVAS_SIZE // 11
 
 class ttoLogic:
 
@@ -35,10 +36,10 @@ class ttoLogic:
             whos_turn %= 2
             if whos_turn == 0:
                 self.turn += 1
-                ttoLogic.cross(self, self.x, self.y)
+                self.cross(self.x, self.y)
             else:
                 self.turn += 1
-                ttoLogic.circle(self, self.x, self.y)
+                self.circle(self.x, self.y)
         self.game_win()
         if self.game_won:
             self.win()
@@ -81,27 +82,45 @@ class ttoLogic:
 
 
     def win(self):
+        edge_correction_sx = SQUARE_SIZE / 2
+        edge_correction_bx = SQUARE_SIZE / 2
+        edge_correction_sy = SQUARE_SIZE / 2
+        edge_correction_by = SQUARE_SIZE / 2
         start, end, player = self.win_pos()
         print(start, end)
         top_x = (start - 1) % 3 * SQUARE_SIZE + SQUARE_SIZE / 2
         top_y = (start - 1) // 3 * SQUARE_SIZE + SQUARE_SIZE / 2
         end_x = (end - 1) % 3 * SQUARE_SIZE + SQUARE_SIZE / 2
         end_y = (end - 1) // 3 * SQUARE_SIZE + SQUARE_SIZE / 2
-        self.canvas.create_line(top_x, top_y, end_x, end_y, fill='lime', width=7)
+        if start == 1 and end == 9:
+            edge_correction_sx = - edge_correction_sx
+            edge_correction_sy = - edge_correction_sy
+        elif start == 3 and end == 7:
+            edge_correction_bx = - edge_correction_bx
+            edge_correction_sy = - edge_correction_sy
+        elif start in [1,4,7] and end in [3,6,9]:
+            edge_correction_sy = 0
+            edge_correction_by = 0
+            edge_correction_sx = - edge_correction_sx
+        elif start in [1,2,3] and end in [7,8,9]:
+            edge_correction_sx = 0
+            edge_correction_bx = 0
+            edge_correction_sy = - edge_correction_sy
+        self.canvas.create_line(top_x + edge_correction_sx, top_y + edge_correction_sy, end_x + edge_correction_bx, end_y + edge_correction_by, fill='lime', width=7)
         self.canvas.unbind('<Button-1>')
         self.game_over(player)
 
     def game_over(self,player):
             self.canvas.create_text(SQUARE_SIZE * 1.5, SQUARE_SIZE,
                             text=f'Game over {player} \n  wins!',
-                            font=('Terminal', 100),
+                            font=('Terminal', TEXT_SIZE),
                             fill='black'
                            )
 
     def draw(self):
             self.canvas.create_text(SQUARE_SIZE * 1.5, SQUARE_SIZE,
                             text=f'Game over X O\n  draw!',
-                            font=('Terminal', 100),
+                            font=('Terminal', TEXT_SIZE),
                             fill='black'
                            )
             
