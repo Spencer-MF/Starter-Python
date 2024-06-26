@@ -87,7 +87,6 @@ class ttoLogic:
         edge_correction_sy = SQUARE_SIZE / 2
         edge_correction_by = SQUARE_SIZE / 2
         start, end, player = self.win_pos()
-        print(start, end)
         top_x = (start - 1) % 3 * SQUARE_SIZE + SQUARE_SIZE / 2
         top_y = (start - 1) // 3 * SQUARE_SIZE + SQUARE_SIZE / 2
         end_x = (end - 1) % 3 * SQUARE_SIZE + SQUARE_SIZE / 2
