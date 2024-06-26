@@ -1,4 +1,5 @@
 import tkinter as tk
+import random
 
 CANVAS_SIZE = 1000
 SQUARE_SIZE = CANVAS_SIZE // 3
@@ -14,23 +15,40 @@ class ttoLogic:
 
         self.pos_x = []
         self.pos_o = []
+        self.empty_pos = [1,2,3,4,5,6,7,8,9]
 
         self.canvas = tk.Canvas(root, width=CANVAS_SIZE, height=CANVAS_SIZE)
         self.canvas.pack()
         self.canvas.bind('<Button-1>', self.input_sqare)
         root.bind('<Key-r>', self.reset)
+        root.bind('<Key-a>', self.play_AI)
+
+        self.playing_AI = False
+        self.AI_level = 0
+        self.AI_turns = 1
 
         self.game()
-        self.turns()
+        self.turns_pvp()
+        self.turns_pve()
         self.game_won = False
 
     def input_sqare(self, event):
         self.x = event.x // SQUARE_SIZE
         self.y = event.y // SQUARE_SIZE
 
-        self.turns()
+        if not self.playing_AI:
+            self.turns_pvp()
+        else:
+            self.turns_pve()
 
-    def turns(self):
+    def play_AI(self, event=None):
+        if self.playing_AI:
+            self.playing_AI = False
+        else:
+            self.playing_AI = True
+
+
+    def turns_pvp(self):
         if self.x is not None and self.y is not None:
             whos_turn = self.turn
             whos_turn %= 2
@@ -45,6 +63,32 @@ class ttoLogic:
             self.win()
         elif self.turn == 9:
             self.draw()
+
+    def turns_pve(self):
+        if self.x is not None and self.y is not None:
+            whos_turn = self.turn
+            whos_turn %= 2
+            if whos_turn == 0:
+                self.turn += 1
+                self.cross(self.x, self.y)
+                self.AI_turns += 1
+            else:
+                self.turn += 1
+                x, y = self.eval()
+                self.circle(x, y)
+            self.game_win()
+        if self.game_won:
+            self.win()
+        elif self.turn == 9:
+            self.draw()
+        if self.AI_turns % 2 == 0:
+            self.turns_pve()
+
+    def board_state(self):
+        used_pos = (self.pos_o + self.pos_x)
+        for num in used_pos:
+            if num in self.empty_pos:
+                self.empty_pos.remove(num)
 
     def game(self):
         self.play_grid()
@@ -79,7 +123,6 @@ class ttoLogic:
                 return combination[0], combination[2], 'O'
         
         return None
-
 
     def win(self):
         edge_correction_sx = SQUARE_SIZE / 2
@@ -130,9 +173,11 @@ class ttoLogic:
         self.x = None
         self.y = None
         self.turn = 0
+        self.AI_turns = 1
 
         self.pos_x = []
         self.pos_o = []
+        self.empty_pos = [1,2,3,4,5,6,7,8,9]
 
         self.game_won = False
         self.canvas.bind('<Button-1>', self.input_sqare)
@@ -174,6 +219,7 @@ class ttoLogic:
                             width= 5
             )
             self.pos_x.append(pos)
+            self.board_state()
         else:
             self.turn -= 1
 
@@ -197,8 +243,30 @@ class ttoLogic:
                             width= 0
             )
             self.pos_o.append(pos)
+            self.board_state()
         else:
             self.turn -= 1
+
+    def rnd(self):
+        empty_sqares = self.empty_pos
+        idx = random.randrange(0, len(empty_sqares))
+
+        return empty_sqares[idx]
+
+    def eval(self):
+        if self.AI_level == 0:
+            move = self.rnd()
+        else:
+            # minimax
+            pass
+
+        x = (move - 1) % 3
+        y = (move - 1) // 3
+        print(x, y)
+        return x, y
+
+    def minimax(self):
+        pass
 
 def main():
     root = tk.Tk()  # Create the main window
