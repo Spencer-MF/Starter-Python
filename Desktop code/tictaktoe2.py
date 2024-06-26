@@ -17,8 +17,9 @@ class ttoLogic:
         self.canvas = tk.Canvas(root, width=CANVAS_SIZE, height=CANVAS_SIZE)
         self.canvas.pack()
         self.canvas.bind('<Button-1>', self.input_sqare)
+        root.bind('<Key-r>', self.reset)
 
-        self.game(self.canvas)
+        self.game()
         self.turns()
         self.game_won = False
 
@@ -43,8 +44,9 @@ class ttoLogic:
             self.win()
         elif self.turn == 9:
             self.draw()
-    def game(self, canvas):
-        ttoLogic.play_grid(canvas)
+
+    def game(self):
+        self.play_grid()
 
     def game_win(self):
         r1 = [1,2,3]
@@ -102,18 +104,32 @@ class ttoLogic:
                             font=('Terminal', 100),
                             fill='black'
                            )
+            
+    def reset(self, event=None):
+        self.canvas.delete('all')
+        self.play_grid()
 
+        self.x = None
+        self.y = None
+        self.turn = 0
 
-    def play_grid(canvas):
+        self.pos_x = []
+        self.pos_o = []
+
+        self.game_won = False
+        self.canvas.bind('<Button-1>', self.input_sqare)
+        
+
+    def play_grid(self):
         for i in range (1, 3):
-            canvas.create_line(SQUARE_SIZE * i,
+            self.canvas.create_line(SQUARE_SIZE * i,
                                 0,
                                 SQUARE_SIZE * i,
                                 CANVAS_SIZE,
                                 width= 5
                                 )
         for j in range (1, 3):
-            canvas.create_line( 0,
+            self.canvas.create_line( 0,
                                 SQUARE_SIZE * j,
                                 CANVAS_SIZE,
                                 SQUARE_SIZE * j,
