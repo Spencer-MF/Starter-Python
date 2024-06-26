@@ -1,7 +1,7 @@
 import tkinter as tk
 import random
 
-CANVAS_SIZE = 500
+CANVAS_SIZE = 750
 SQUARE_SIZE = CANVAS_SIZE // 3
 IN_BOARDER = 10
 TEXT_SIZE = CANVAS_SIZE // 11
@@ -21,7 +21,7 @@ class ttoLogic:
         self.pos_o = []
         self.empty_pos = [1,2,3,4,5,6,7,8,9]
 
-        self.canvas = tk.Canvas(root, width=CANVAS_SIZE, height=CANVAS_SIZE)
+        self.canvas = tk.Canvas(root, width=CANVAS_SIZE, height=CANVAS_SIZE, background='white')
         self.canvas.pack()
         self.canvas.bind('<Button-1>', self.input_sqare)
         root.bind('<Key-r>', self.reset)
@@ -206,14 +206,16 @@ class ttoLogic:
                                 0,
                                 SQUARE_SIZE * i,
                                 CANVAS_SIZE,
-                                width= 5
+                                width= 5,
+                                fill='black'
                                 )
         for j in range (1, 3):
             self.canvas.create_line( 0,
                                 SQUARE_SIZE * j,
                                 CANVAS_SIZE,
                                 SQUARE_SIZE * j,
-                                width= 5
+                                width= 5,
+                                fill='black'
                                 )
             
     def cross(self, col, row):
