@@ -1,8 +1,7 @@
 import tkinter as tk
 import random
-import copy
 
-CANVAS_SIZE = 250
+CANVAS_SIZE = 500
 SQUARE_SIZE = CANVAS_SIZE // 3
 IN_BOARDER = 10
 TEXT_SIZE = CANVAS_SIZE // 11
