@@ -2,7 +2,7 @@ import tkinter as tk
 import random
 import copy
 
-CANVAS_SIZE = 1000
+CANVAS_SIZE = 250
 SQUARE_SIZE = CANVAS_SIZE // 3
 IN_BOARDER = 10
 TEXT_SIZE = CANVAS_SIZE // 11
@@ -23,7 +23,6 @@ class ttoLogic:
         self.canvas.bind('<Button-1>', self.input_sqare)
         root.bind('<Key-r>', self.reset)
         root.bind('<Key-a>', self.play_AI)
-        root.bind('<Key-l>', self.level)
 
         self.playing_AI = False
         self.AI_turns = 1
@@ -257,7 +256,6 @@ class ttoLogic:
         move = self.rnd()
         x = (move - 1) % 3
         y = (move - 1) // 3
-        print(x, y)
         return x, y
 
 def main():
