@@ -1,5 +1,4 @@
 import tkinter as tk
-import pandas as pd
 import random
 
 CANVAS_SIZE = 500
@@ -32,6 +31,7 @@ class ttoLogic:
         self.playing_AI = False
         self.game_mode = 0
         self.normal_game_mode = True
+        self.peices_allowed = 7
         self.AI_turns = 1
 
         self.game()
@@ -176,7 +176,7 @@ class ttoLogic:
 
     def draw(self):
             self.canvas.create_text(SQUARE_SIZE * 1.5, SQUARE_SIZE,
-                            text=f'  Game over X O\n  draw!',
+                            text=f' Game over XO\n  draw!',
                             font=('Terminal', TEXT_SIZE),
                             fill='black'
                            )
@@ -240,13 +240,14 @@ class ttoLogic:
             self.board_state()
             self.objs_x.append(obj)
             self.objs_x.append(obj2)
-            if len(self.pos_x) > 1 and not self.normal_game_mode:
+            if len(self.pos_o) + len(self.pos_x) > self.peices_allowed and not self.normal_game_mode:
                 self.empty_pos.append(self.pos_x[0])
                 del self.pos_x[0]
                 for i in range(2):
-                    move_to_delete = str(self.objs_x[i])
-                    print(move_to_delete)
+                    move_to_delete = str(self.objs_x[0])
+                    del self.objs_x[0]
                     self.canvas.delete(move_to_delete)
+
         else:
             self.turn -= 1
 
@@ -273,12 +274,12 @@ class ttoLogic:
             self.board_state()
             self.objs_o.append(obj)
             self.objs_o.append(obj2)
-            if len(self.pos_o) > 1 and not self.normal_game_mode:
+            if len(self.pos_o) + len(self.pos_x) > self.peices_allowed and not self.normal_game_mode:
                 self.empty_pos.append(self.pos_o[0])
                 del self.pos_o[0]
                 for i in range(2):
-                    move_to_delete = str(self.objs_o[i])
-                    print(move_to_delete)
+                    move_to_delete = str(self.objs_o[0])
+                    del self.objs_o[0]
                     self.canvas.delete(move_to_delete)
         else:
             self.turn -= 1
