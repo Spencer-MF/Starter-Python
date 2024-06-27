@@ -19,9 +19,22 @@ class ttoLogic:
 
         self.pos_x = []
         self.pos_o = []
+        self.pos_o_over_flow = []
         self.empty_pos = [1,2,3,4,5,6,7,8,9]
 
-        self.canvas = tk.Canvas(root, width=CANVAS_SIZE, height=CANVAS_SIZE, background='white')
+        self.theme = 0
+
+        self.bg = 'white'
+        self.grid = 'black'
+        self.x_color = 'red'
+        self.o_color = 'blue'
+        self.o_in_fill = self.bg
+        self.txt_color = self.grid
+        self.win_line = 'lime'
+
+        self.redraw = False
+
+        self.canvas = tk.Canvas(root, width=CANVAS_SIZE, height=CANVAS_SIZE, background=self.bg)
         self.canvas.pack()
         self.canvas.bind('<Button-1>', self.input_sqare)
         root.bind('<Key-r>', self.reset)
@@ -30,6 +43,8 @@ class ttoLogic:
         root.bind('<Key-A>', self.play_AI)
         root.bind('<Key-m>', self.mode)
         root.bind('<Key-M>', self.mode)
+        root.bind('<Key-t>', self.themes)
+        root.bind('<Key-T>', self.themes)
 
         self.playing_AI = False
         self.game_mode = 0
@@ -64,6 +79,44 @@ class ttoLogic:
         else:
             self.game_mode = 0
             self.normal_game_mode = True
+    
+    def themes(self, event=None):
+        if self.theme == 0:
+            self.bg = 'black'
+            self.grid = 'white'
+            self.o_in_fill = self.bg
+            self.txt_color = self.grid
+            self.theme = 1
+        elif self.theme == 1:
+            self.bg = 'white'
+            self.grid = 'black'
+            self.o_in_fill = self.bg
+            self.txt_color = self.grid
+            self.theme = 0
+        
+        self.canvas.delete('all')
+        if len(self.pos_o) > 0:
+            self.redraw = True
+            for i in range(len(self.pos_o)):
+                rc = self.pos_o[i]
+                c = (rc - 1) % 3
+                r = (rc - 1) // 3
+                self.circle(c, r)
+        if len(self.pos_x) > 0:
+            self.redraw = True
+            for i in range(len(self.pos_x)):
+                rc = self.pos_x[i]
+                c = (rc - 1) % 3
+                r = (rc - 1) // 3
+                self.cross(c, r)
+        self.redraw = False
+
+        if self.game_won:
+            self.win()
+
+        self.canvas.config(bg=self.bg)
+        self.play_grid()
+        self.canvas.update_idletasks()
 
     def turns_pvp(self):
         if self.x is not None and self.y is not None:
@@ -165,7 +218,7 @@ class ttoLogic:
             edge_correction_sx = 0
             edge_correction_bx = 0
             edge_correction_sy = - edge_correction_sy
-        self.canvas.create_line(top_x + edge_correction_sx, top_y + edge_correction_sy, end_x + edge_correction_bx, end_y + edge_correction_by, fill='lime', width=7)
+        self.canvas.create_line(top_x + edge_correction_sx, top_y + edge_correction_sy, end_x + edge_correction_bx, end_y + edge_correction_by, fill=self.win_line, width=7)
         self.canvas.unbind('<Button-1>')
         self.game_over(player)
 
@@ -173,14 +226,14 @@ class ttoLogic:
             self.canvas.create_text(SQUARE_SIZE * 1.5, SQUARE_SIZE,
                             text=f'Game over {player} \n  wins!',
                             font=('Terminal', TEXT_SIZE),
-                            fill='black'
+                            fill=self.txt_color
                            )
 
     def draw(self):
             self.canvas.create_text(SQUARE_SIZE * 1.5, SQUARE_SIZE,
                             text=f' Game over XO\n  draw!',
                             font=('Terminal', TEXT_SIZE),
-                            fill='black'
+                            fill=self.txt_color
                            )
             
     def reset(self, event=None):
@@ -194,6 +247,7 @@ class ttoLogic:
 
         self.pos_x = []
         self.pos_o = []
+        self.pos_o_over_flow = []
         self.objs_x = []
         self.objs_o = []
         self.empty_pos = [1,2,3,4,5,6,7,8,9]
@@ -209,7 +263,7 @@ class ttoLogic:
                                 SQUARE_SIZE * i,
                                 CANVAS_SIZE,
                                 width= 5,
-                                fill='black'
+                                fill=self.grid
                                 )
         for j in range (1, 3):
             self.canvas.create_line( 0,
@@ -217,40 +271,40 @@ class ttoLogic:
                                 CANVAS_SIZE,
                                 SQUARE_SIZE * j,
                                 width= 5,
-                                fill='black'
+                                fill=self.grid
                                 )
             
     def cross(self, col, row):
         top_x = col * SQUARE_SIZE
         top_y = row * SQUARE_SIZE
         pos = row * 3 + col + 1
-        if pos not in self.pos_x and pos not in self.pos_o:
+        if pos not in self.pos_x and pos not in self.pos_o or self.redraw:
             obj = self.canvas.create_line(top_x + IN_BOARDER,
                             top_y + IN_BOARDER,
                             top_x + SQUARE_SIZE - IN_BOARDER,
                             top_y + SQUARE_SIZE - IN_BOARDER,
-                            fill= 'red',
+                            fill= self.x_color,
                             width= 5
             )
             obj2 = self.canvas.create_line(top_x + SQUARE_SIZE - IN_BOARDER,
                             top_y + IN_BOARDER,
                             top_x + IN_BOARDER,
                             top_y + SQUARE_SIZE - IN_BOARDER,
-                            fill= 'red',
+                            fill= self.x_color,
                             width= 5
             )
-
-            self.pos_x.append(pos)
-            self.board_state()
-            self.objs_x.append(obj)
-            self.objs_x.append(obj2)
-            if len(self.pos_o) + len(self.pos_x) > self.peices_allowed and not self.normal_game_mode:
-                self.empty_pos.append(self.pos_x[0])
-                del self.pos_x[0]
-                for i in range(2):
-                    move_to_delete = str(self.objs_x[0])
-                    del self.objs_x[0]
-                    self.canvas.delete(move_to_delete)
+            if not self.redraw:
+                self.pos_x.append(pos)
+                self.board_state()
+                self.objs_x.append(obj)
+                self.objs_x.append(obj2)
+                if len(self.pos_o) + len(self.pos_x) > self.peices_allowed and not self.normal_game_mode:
+                    self.empty_pos.append(self.pos_x[0])
+                    del self.pos_x[0]
+                    for i in range(2):
+                        move_to_delete = str(self.objs_x[0])
+                        del self.objs_x[0]
+                        self.canvas.delete(move_to_delete)
 
         else:
             self.turn -= 1
@@ -259,32 +313,33 @@ class ttoLogic:
         top_x = col * SQUARE_SIZE
         top_y = row * SQUARE_SIZE
         pos = row * 3 + col + 1
-        if pos not in self.pos_x and pos not in self.pos_o:
+        if pos not in self.pos_x and pos not in self.pos_o or self.redraw:
             obj = self.canvas.create_oval(top_x + IN_BOARDER,
                             top_y + IN_BOARDER,
                             top_x + SQUARE_SIZE - IN_BOARDER,
                             top_y + SQUARE_SIZE - IN_BOARDER,
-                            fill= 'blue',
+                            fill= self.o_color,
                             width= 0
             )
             obj2 = self.canvas.create_oval(top_x + IN_BOARDER * 1.5,
                             top_y + IN_BOARDER * 1.5,
                             top_x + SQUARE_SIZE - IN_BOARDER * 1.5,
                             top_y + SQUARE_SIZE - IN_BOARDER * 1.5,
-                            fill= 'white',
+                            fill= self.o_in_fill,
                             width= 0
             )
-            self.pos_o.append(pos)
-            self.board_state()
-            self.objs_o.append(obj)
-            self.objs_o.append(obj2)
-            if len(self.pos_o) + len(self.pos_x) > self.peices_allowed and not self.normal_game_mode:
-                self.empty_pos.append(self.pos_o[0])
-                del self.pos_o[0]
-                for i in range(2):
-                    move_to_delete = str(self.objs_o[0])
-                    del self.objs_o[0]
-                    self.canvas.delete(move_to_delete)
+            if not self.redraw:
+                self.pos_o.append(pos)
+                self.board_state()
+                self.objs_o.append(obj)
+                self.objs_o.append(obj2)
+                if len(self.pos_o) + len(self.pos_x) > self.peices_allowed and not self.normal_game_mode:
+                    self.empty_pos.append(self.pos_o[0])
+                    del self.pos_o[0]
+                    for i in range(2):
+                        move_to_delete = str(self.objs_o[0])
+                        del self.objs_o[0]
+                        self.canvas.delete(move_to_delete)
         else:
             self.turn -= 1
 
