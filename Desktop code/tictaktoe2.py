@@ -25,8 +25,11 @@ class ttoLogic:
         self.canvas.pack()
         self.canvas.bind('<Button-1>', self.input_sqare)
         root.bind('<Key-r>', self.reset)
+        root.bind('<Key-R>', self.reset)
         root.bind('<Key-a>', self.play_AI)
+        root.bind('<Key-A>', self.play_AI)
         root.bind('<Key-m>', self.mode)
+        root.bind('<Key-M>', self.mode)
 
         self.playing_AI = False
         self.game_mode = 0
@@ -93,8 +96,7 @@ class ttoLogic:
         self.game_win()
         if self.game_won:
             self.win()
-            return None
-        elif self.turn == 9:
+        elif len(self.empty_pos) == 0:
             self.draw()
         elif self.AI_turns % 2 == 0:
             self.turns_pve()
