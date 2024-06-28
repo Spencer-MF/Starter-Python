@@ -102,7 +102,7 @@ while(True):
 
     while(leaveLoop == False):
     ### It's the players turn
-        if(turnCounter % 2 ==1 ):
+        if(turnCounter % 2 ==0 ):
             printGameBoard()
             numberPicked = int(input("\nChoose a number [1-9]: "))
             if(numberPicked >=1 or numberPicked <=9):
