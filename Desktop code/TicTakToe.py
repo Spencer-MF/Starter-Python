@@ -10,11 +10,11 @@ while(True):
 
     def printGameBoard():
         for x in range(rows):
-            print("+---+---+---+")
+            print("\n+---+---+---+")
             print("|", end="")
             for y in range(cols):
-                print("", gameBoard[x][y], end=" |")
-            print("\n+---+---+---+")
+                print("", gameBoard[x][y], end=" |")  
+        print("\n+---+---+---+")
 
     def modifyArray(num, turn):
         num -= 1
