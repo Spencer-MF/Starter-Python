@@ -18,11 +18,15 @@ class Database:
             print(f'Enter the {data_type}:')
             if data_type == 'Name':
                 in_name = input() 
+                if in_name == '':
+                    in_name = None
                 self.names_list.append(in_name)
                 data = self.data_directory[data_type]
                 data[in_name] = in_name
             else:
                 in_data = input()
+                if in_data == '':
+                    in_data = None
                 data = self.data_directory[data_type]
                 name = self.names_list[-1]
                 data[name] = in_data
