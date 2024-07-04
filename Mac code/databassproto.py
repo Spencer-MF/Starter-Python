@@ -62,16 +62,16 @@ class FrontEnd:
         print("if you would like to see the full database press 3 if you would like to find a spasific person info press 4")
         print('if you would like to import a file (this file has to be structed for this database) press 0')
         while True:
-            admin_choice = int(input())
-            if admin_choice == 1:
+            admin_choice = input()
+            if admin_choice == '1':
                 self.add_people()
-            elif admin_choice == 2:
+            elif admin_choice == '2':
                 self.remove_people()
-            elif admin_choice == 3:
+            elif admin_choice == '3':
                 db.print_full_table()
-            elif admin_choice == 4:
+            elif admin_choice == '4':
                 db.find_info_person()
-            elif admin_choice == 0:
+            elif admin_choice == '0':
                 im.what_file()
             else:
                 print('Invaid input')
@@ -171,7 +171,8 @@ class ImportFile:
                 continue
             if line.startswith('Name:'):
                 current_name = line.split(':')[1].strip()
-                db.names_list.append(current_name)
+                if current_name not in db.names_list:
+                    db.names_list.append(current_name)
                 db.names[current_name] = current_name
             elif line.startswith('Phonenumber:'):
                 if current_name:
