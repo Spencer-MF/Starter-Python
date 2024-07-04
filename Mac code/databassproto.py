@@ -133,11 +133,14 @@ class Export:
     def write_full_table(self, file_name):
         self.get_time_and_date()
         with open(f'{file_name}.txt', 'a') as f:
-            f.write(f'{self.current_date} {self.current_time}\n')
-            for data_type, data_pointer in db.data_directory.items():
-                f.write(f'{data_type}:')
-                for data in data_pointer.values():
-                    f.write(' ' + str(data))
+            f.write(f'\n\n{self.current_date} {self.current_time}\n\n')
+            for people in db.names_list:
+                for data_type in db.data_directory.keys():
+                    f.write(f'{data_type}: ')
+                    data_folder = db.data_directory[data_type]
+                    data = data_folder[people]
+                    f.write(str(data))
+                    f.write('\n')
                 f.write('\n')
     
     def get_time_and_date(self):
@@ -161,18 +164,24 @@ class ImportFile:
             self.populate_database(lines)
 
     def populate_database(self, lines):
-        current_data_type = None
+        current_name = None
         for line in lines:
             line = line.strip()
             if not line:
                 continue
-            if line.startswith('Name:') or line.startswith('Phonenumber:') or line.startswith('Age:') or line.startswith('Notes:'):
-                current_data_type = line.split(':')[0]
-            else:
-                name, data = line.split(' ', 1)
-                db.data_directory[current_data_type][name] = data
-                if current_data_type == 'Name':
-                    db.names_list.append(name)
+            if line.startswith('Name:'):
+                current_name = line.split(':')[1].strip()
+                db.names_list.append(current_name)
+                db.names[current_name] = current_name
+            elif line.startswith('Phonenumber:'):
+                if current_name:
+                    db.phone_numbers[current_name] = line.split(':')[1].strip()
+            elif line.startswith('Age:'):
+                if current_name:
+                    db.ages[current_name] = line.split(':')[1].strip()
+            elif line.startswith('Notes:'):
+                if current_name:
+                    db.notes[current_name] = line.split(':')[1].strip()
 
 db = Database()
 im = ImportFile(db)
