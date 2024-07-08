@@ -181,14 +181,18 @@ class Database:
         return min_time_name_tie, mm, dd
 
     def in_age_range(self):
-        minmax = str(input('Type the min age then a space then the max age'))
+        minmax = str(input('Type the min age then a space then the max age for no min or max type None or press the spasebar instead:\n'))
         min_and_max = minmax.split()
         minimum = min_and_max[0]
         maximum = min_and_max[1]
+        if minimum == None or minimum == ' ':
+            minimum = 0
+        if maximum == None or maximum == ' ':
+            maximum = 1000000
         names = []
         for name in self.names_list:
             years_old, ignor1, ignor2 = self.age_calc(name)
-            if minimum < years_old < maximum:
+            if int(minimum) -1  < int(years_old) < int(maximum) + 1:
                 names.append(name)
         if not names:
             names.append('No one in age range')
@@ -302,7 +306,7 @@ class FrontEnd:
             elif admin_choice == '2':
                 self.next_birthday_specific()
             elif admin_choice == '3':
-                pass
+                self.people_age_range()
             elif admin_choice == '4':
                 self.next_birthday()
             else:
@@ -352,14 +356,15 @@ class FrontEnd:
     def people_age_range(self):
         name, minimum, maximum = db.in_age_range()
         total_poeple = len(name)
+        is_or_are = 'are'
         if total_poeple > 1:
             names_list = ', '.join(name[:-1]) + ', and ' + name[-1]
         else:
             names_list = name[0]
-        print(f'{names_list} are in the age range {minimum} to {maximum} years old')
+            is_or_are = 'is'
+        print(f'{total_poeple} {is_or_are} in the age range {minimum} to {maximum} years old\n{names_list}')
 
     def next_birthday(self):
-        print(db.dob)
         name, mm, dd = db.closest_birthday()
         if len(name) > 1:
             names_list = ', '.join(name[:-1]) + ', and ' + name[-1]
