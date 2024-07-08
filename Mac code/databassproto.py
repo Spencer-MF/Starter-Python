@@ -46,6 +46,95 @@ class Database:
             del data[person]
         print('done!')
 
+    def edit_info(self):
+        hit = 0
+        while True:
+            name = input("What person's info would you like to edit?\n")
+            if name in self.names_list:
+                break
+            else:
+                print('Invalid name try again')
+        print('What type of info would you like to change?\n Name, Phonenumber, Age, or Notes')
+        invalid = True
+        while invalid:
+            data_type = self.multi_choice()
+            invalid = False
+            if self.lists_overlap(data_type, ['1', 'Name', 'name']):
+                name = self.name_change(name)
+                hit += 1
+            if self.lists_overlap(data_type, ['2', 'Phonenumber', 'number', 'phone', 'phonenumber', 'Number', 'Phone']):
+                self.number_change(name)
+                hit += 1
+            if self.lists_overlap(data_type, ['3', 'age', 'Age']):
+                self.age_change(name)
+                hit += 1
+            if self.lists_overlap(data_type, ['4', 'Notes', 'notes', 'note', 'Note']):
+                self.notes_change(name)
+                hit += 1
+            if hit == 0:
+                print('Invalid input try again')
+                invalid = True
+            else:
+                break
+    
+    def lists_overlap(self,a, b):
+        for i in a:
+            if i in b:
+              return True
+        return False
+
+    def number_change(self, name):
+        new_number = input(f"What would you like to change {name}'s phonenumber to?\n")
+        self.phone_numbers[name] = new_number
+
+    def age_change(self, name):
+        new_age = input(f"What would you like to change {name}'s age to?\n")
+        self.ages[name] = new_age
+
+    def notes_change(self, name):
+        while True:
+            choice = input(f'Would you like to add to or replace the notes for {name}')
+            if choice in ['1', 'add', 'Add']:
+                notes_append = input(f"What would you like to add to {name}'s notes?\n")
+                notes_old = self.notes[name]
+                self.notes[name] = notes_old + notes_append
+                break
+            elif choice in ['2', 'replace', 'Replace']:
+                notes_replace = input(f"What would you like {name}'s notes to be?\n")
+                self.notes[name] = notes_replace
+                break
+            else:
+                print('Invalid input try again')
+    
+    def multi_choice(self):
+        choices = input('Enter all the choices you want seperated by a space:\n')
+        choices_lst = choices.split()
+        return choices_lst
+        
+    def name_change(self, name):
+        new_name = str(input(f"What would you like to change {name}'s name to?\n"))
+
+        if name not in self.names:
+            print(f"Name {name} not found.")
+            return None
+
+        for i, people in enumerate(self.names_list):
+            if people == name:
+                self.names_list[i] = new_name
+
+        self.names[new_name] = new_name
+        self.ages[new_name] = self.ages.pop(name)
+        self.phone_numbers[new_name] = self.phone_numbers.pop(name)
+        self.notes[new_name] = self.notes.pop(name)
+
+        del self.names[name]
+
+        return new_name
+                
+    def num_entries(self):
+        num = len(self.names_list)
+        print(f'There are {num} entries')
+
     def print_full_table(self):
         data_list = []
         for data_type, data_pointer in self.data_directory.items():
@@ -64,6 +153,7 @@ class FrontEnd:
         print('This is the control panal for this database')
         print('If you would like to add people press 1 if you would like to remove people press 2')
         print("if you would like to see the full database press 3 if you would like to find a spasific person info press 4")
+        print('if you would like to know the amount of entries press 5 if you would like to edit a person press 6')
         print('if you would like to import a file (this file has to be structed for this database) press 0')
         while True:
             admin_choice = input()
@@ -75,6 +165,10 @@ class FrontEnd:
                 db.print_full_table()
             elif admin_choice == '4':
                 db.find_info_person()
+            elif admin_choice == '5':
+                db.num_entries()
+            elif admin_choice == '6':
+                self.edit_people()
             elif admin_choice == '0':
                 im.what_file()
             else:
@@ -82,7 +176,6 @@ class FrontEnd:
             cont = input('If you would like to continue press enter: ')
             if cont != '':
                 break
-
 
     def add_people(self):
         while True:
@@ -95,6 +188,13 @@ class FrontEnd:
         while True:
             db.remove_indivual()
             cont = input('To remove another person press Enter: ')
+            if cont != '':
+                break
+
+    def edit_people(self):
+        while True:
+            db.edit_info()
+            cont = input('To edit another person press Enter: ')
             if cont != '':
                 break
 

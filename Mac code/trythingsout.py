@@ -14,4 +14,11 @@ def list_2x(in_lst):
         in_lst[i] *= 2
     print(in_lst)
 
-list_2x(in_lst)
+def del_test(lst):
+    del lst[0], lst[-1]
+
+def replace_list_test(lst):
+    lst[0] = 5
+
+replace_list_test(in_lst)
+print(in_lst)
