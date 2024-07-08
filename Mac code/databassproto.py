@@ -7,9 +7,9 @@ class Database:
         self.names_list = []
         self.names = {}
         self.phone_numbers = {}
-        self.ages = {}
+        self.dob = {}
         self.notes = {}
-        self.data_directory = {'Name':self.names, 'Phonenumber':self.phone_numbers, 'Age':self.ages, 'Notes': self.notes}
+        self.data_directory = {'Name':self.names, 'Phonenumber':self.phone_numbers, 'Date of Birth':self.dob, 'Notes': self.notes}
 
 
     def input_data(self):
@@ -24,6 +24,8 @@ class Database:
                 data = self.data_directory[data_type]
                 data[in_name] = in_name
             else:
+                if data_type == 'Date of Birth':
+                    print('yyyy-mm-dd format (with dashes)')
                 in_data = input()
                 if in_data == '':
                     in_data = None
@@ -54,7 +56,7 @@ class Database:
                 break
             else:
                 print('Invalid name try again')
-        print('What type of info would you like to change?\n Name, Phonenumber, Age, or Notes')
+        print('What type of info would you like to change?\n Name, Phonenumber, Age, or Notes\n')
         invalid = True
         while invalid:
             data_type = self.multi_choice()
@@ -65,8 +67,8 @@ class Database:
             if self.lists_overlap(data_type, ['2', 'Phonenumber', 'number', 'phone', 'phonenumber', 'Number', 'Phone']):
                 self.number_change(name)
                 hit += 1
-            if self.lists_overlap(data_type, ['3', 'age', 'Age']):
-                self.age_change(name)
+            if self.lists_overlap(data_type, ['3', 'date of birth', 'date', 'Date of Birth', 'birth', 'Date', 'birth', 'Date of birth']):
+                self.dob_change(name)
                 hit += 1
             if self.lists_overlap(data_type, ['4', 'Notes', 'notes', 'note', 'Note']):
                 self.notes_change(name)
@@ -87,9 +89,9 @@ class Database:
         new_number = input(f"What would you like to change {name}'s phonenumber to?\n")
         self.phone_numbers[name] = new_number
 
-    def age_change(self, name):
-        new_age = input(f"What would you like to change {name}'s age to?\n")
-        self.ages[name] = new_age
+    def dob_change(self, name):
+        new_age = input(f"What would you like to change {name}'s date of birth to?\nyyyy-mm-dd format (with dashes)\n")
+        self.dob[name] = new_age
 
     def notes_change(self, name):
         while True:
@@ -123,7 +125,7 @@ class Database:
                 self.names_list[i] = new_name
 
         self.names[new_name] = new_name
-        self.ages[new_name] = self.ages.pop(name)
+        self.dob[new_name] = self.dob.pop(name)
         self.phone_numbers[new_name] = self.phone_numbers.pop(name)
         self.notes[new_name] = self.notes.pop(name)
 
@@ -131,6 +133,68 @@ class Database:
 
         return new_name
                 
+    def age_calc(self, name):
+        dob = str(self.dob[name])
+        today = str(date.today())
+        today_list = today.split('-')
+        dob = dob.split('-')
+        delta_year = int(today_list[0]) - int(dob[0])
+        delta_month = int(today_list[1]) - int(dob [1])
+        delta_day = int(today_list[2]) - int(dob[2])
+        if delta_month < 0 and delta_day < 0:
+            delta_year -= 1
+        return delta_year, delta_month, delta_day
+        
+    def time_till_birthday(self, name):
+        dy, dm, dd = self.age_calc(name)
+        dm *= -1
+        dd *= -1
+        if dm < 0:
+            dm += 12
+        if dd < 0:
+            dm -= 1
+            dd -= self.month()
+        return dm, dd
+
+    def closest_birthday(self):
+        min_time = []
+        min_time_name = []
+        x_way_tie = 0
+        min_time_name_tie = []
+        for name in self.names_list:
+            dm, dd = self.time_till_birthday(name)
+            days_converted_from_months = self.month_to_day(dm)
+            days = dd + days_converted_from_months
+            if not min_time:
+                min_time.append(days)
+                min_time_name.append(name)
+            elif days < min(min_time)-1:
+                if days == min(min_time):
+                    x_way_tie += 1
+                min_time.append(days)
+                min_time_name.append(name)
+        for i in range(x_way_tie + 1):    
+            name = min_time_name[i]
+            min_time_name_tie.append(name)
+        name = min_time_name[0]
+        mm, dd = self.time_till_birthday(name)
+        return min_time_name_tie, mm, dd
+
+    def in_age_range(self):
+        minmax = str(input('Type the min age then a space then the max age'))
+        min_and_max = minmax.split()
+        minimum = min_and_max[0]
+        maximum = min_and_max[1]
+        names = []
+        for name in self.names_list:
+            years_old, ignor1, ignor2 = self.age_calc(name)
+            if minimum < years_old < maximum:
+                names.append(name)
+        if not names:
+            names.append('No one in age range')
+        return names, minimum, maximum
+
+
     def num_entries(self):
         num = len(self.names_list)
         print(f'There are {num} entries')
@@ -143,6 +207,54 @@ class Database:
             print(f'{data_type}: {data_list}')
             data_list.clear()
 
+    def month(self):
+        today = str(date.today())
+        today_list = today.split('-')
+        mm = today_list[1]
+        if mm in ['01', '03', '05', '07', '08', '12']:
+            return 31
+        elif mm in ['02']:
+            if self.leap_year():
+                return 29
+            return 28
+        return 30
+    
+    def month_to_day(self, dm):
+        days = 0
+        today = str(date.today())
+        today_list = today.split('-')
+        mm = int(today_list[1])
+        for i in range(int(dm)):
+            mm += i
+            if mm in [1, 3, 5, 7, 8, 12]:
+                days += 31
+            elif mm in [2]:
+                if self.leap_year():
+                    days += 29
+                days += 28
+            else:
+                days += 30
+        return days
+    
+    def years_to_day(self, dy):
+        if self.leap_year():
+            return 366
+        else:
+            return 365
+    
+    def leap_year(self):
+        today = str(date.today())
+        today_list = today.split('-')
+        yyyy = int(today_list[0])
+        yy00 = yyyy % 100
+        if yy00 != 0:
+            if yyyy % 4 == 0:
+                return True
+        elif yyyy % 400 == 0:
+            return True
+        return False
+        
+
 class FrontEnd:
 
     def __init__(self, db, im):
@@ -154,6 +266,7 @@ class FrontEnd:
         print('If you would like to add people press 1 if you would like to remove people press 2')
         print("if you would like to see the full database press 3 if you would like to find a spasific person info press 4")
         print('if you would like to know the amount of entries press 5 if you would like to edit a person press 6')
+        print('if you would like to know about the ages of the people press 7')
         print('if you would like to import a file (this file has to be structed for this database) press 0')
         while True:
             admin_choice = input()
@@ -169,11 +282,32 @@ class FrontEnd:
                 db.num_entries()
             elif admin_choice == '6':
                 self.edit_people()
+            elif admin_choice == '7':
+                self.ages_control_panal()
             elif admin_choice == '0':
                 im.what_file()
             else:
                 print('Invaid input')
             cont = input('If you would like to continue press enter: ')
+            if cont != '':
+                break
+
+    def ages_control_panal(self):
+        print('If you would like to know the ages of people press 1 if you would like to know the time a persons next birthday press 2')
+        print('if you would like to know the people in any age range press 3 if you like to know the closest birthday to today press 4')
+        while True:
+            admin_choice = input()
+            if admin_choice == '1':
+                self.peoples_age()
+            elif admin_choice == '2':
+                self.next_birthday_specific()
+            elif admin_choice == '3':
+                pass
+            elif admin_choice == '4':
+                self.next_birthday()
+            else:
+                print('Invaid input')
+            cont = input('If you would like to continue in this menue press enter: ')
             if cont != '':
                 break
 
@@ -197,6 +331,41 @@ class FrontEnd:
             cont = input('To edit another person press Enter: ')
             if cont != '':
                 break
+    
+    def peoples_age(self):
+        while True:
+            name = input("Who's age would you like to know?\n")
+            if name in db.names_list:
+                age, m, d = db.age_calc(name)
+                print(f'{name} is {age} years old')
+                cont = input('To edit another person press Enter: ')
+            else:
+                print(f'{name} not found in database')
+            if cont != '':
+                break
+
+    def next_birthday_specific(self):
+        name = input("Who's age would you like to know?\n")
+        mm, dd = db.time_till_birthday(name)
+        print(f"There are {mm} months and {dd} days till {name}'s next birthday\n")
+
+    def people_age_range(self):
+        name, minimum, maximum = db.in_age_range()
+        total_poeple = len(name)
+        if total_poeple > 1:
+            names_list = ', '.join(name[:-1]) + ', and ' + name[-1]
+        else:
+            names_list = name[0]
+        print(f'{names_list} are in the age range {minimum} to {maximum} years old')
+
+    def next_birthday(self):
+        print(db.dob)
+        name, mm, dd = db.closest_birthday()
+        if len(name) > 1:
+            names_list = ', '.join(name[:-1]) + ', and ' + name[-1]
+        else:
+            names_list = name[0]
+        print(f'{names_list} has the closest birthday!\nIt is in {mm} months and {dd} days')
 
 class Export:
 
@@ -281,9 +450,9 @@ class ImportFile:
             elif line.startswith('Phonenumber:'):
                 if current_name:
                     db.phone_numbers[current_name] = line.split(':')[1].strip()
-            elif line.startswith('Age:'):
+            elif line.startswith('Date of Birth:'):
                 if current_name:
-                    db.ages[current_name] = line.split(':')[1].strip()
+                    db.dob[current_name] = line.split(':')[1].strip()
             elif line.startswith('Notes:'):
                 if current_name:
                     db.notes[current_name] = line.split(':')[1].strip()
