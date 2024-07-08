@@ -151,7 +151,10 @@ class Database:
         dd *= -1
         if dm < 0:
             dm += 12
-        if dd < 0:
+        if dm == 0 and dd < 0:
+            dm += 11
+            dd += self.month()
+        elif dd < 0:
             dm -= 1
             dd -= self.month()
         return dm, dd
@@ -181,13 +184,13 @@ class Database:
         return min_time_name_tie, mm, dd
 
     def in_age_range(self):
-        minmax = str(input('Type the min age then a space then the max age for no min or max type None or press the spasebar instead:\n'))
+        minmax = str(input('Type the min age then a space then the max age for no min or max type None or type - instead:\n'))
         min_and_max = minmax.split()
         minimum = min_and_max[0]
         maximum = min_and_max[1]
-        if minimum == None or minimum == ' ':
+        if minimum == None or minimum == '-':
             minimum = 0
-        if maximum == None or maximum == ' ':
+        if maximum == None or maximum == '-':
             maximum = 1000000
         names = []
         for name in self.names_list:
@@ -354,6 +357,7 @@ class FrontEnd:
         print(f"There are {mm} months and {dd} days till {name}'s next birthday\n")
 
     def people_age_range(self):
+        responce = 0
         name, minimum, maximum = db.in_age_range()
         total_poeple = len(name)
         is_or_are = 'are'
@@ -362,7 +366,20 @@ class FrontEnd:
         else:
             names_list = name[0]
             is_or_are = 'is'
-        print(f'{total_poeple} {is_or_are} in the age range {minimum} to {maximum} years old\n{names_list}')
+        if minimum < 1:
+
+            responce += 1
+        if maximum > 10000:
+
+            responce += 2
+        if responce == 0:
+            print(f'{total_poeple} {is_or_are} in the age range {minimum} to {maximum} years old\n{names_list}')
+        elif responce == 1:
+            print(f'{total_poeple} {is_or_are} younger than {maximum} years old\n{names_list}')
+        elif responce == 2:
+            print(f'{total_poeple} {is_or_are} older than {minimum} years old\n{names_list}')
+        else:
+            print(f'{total_poeple} {is_or_are} in the database with an age\n{names_list}')
 
     def next_birthday(self):
         name, mm, dd = db.closest_birthday()
