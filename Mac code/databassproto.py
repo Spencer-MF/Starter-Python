@@ -1,5 +1,7 @@
 import time
+import sys
 from datetime import date
+from hashlib import sha256
 
 class Database:
 
@@ -10,6 +12,8 @@ class Database:
         self.dob = {}
         self.notes = {}
         self.data_directory = {'Name':self.names, 'Phonenumber':self.phone_numbers, 'Date of Birth':self.dob, 'Notes': self.notes}
+
+        self.password_manager = {}
 
 
     def input_data(self):
@@ -393,8 +397,12 @@ class Export:
 
     def __init__(self, db):
         self.db = db
+        self.im = im
         self.current_time = None
         self.current_date = None
+        self.password = None
+        self.password_switch = False
+        self.password_fail = False
 
     def export_control(self):
         print('Would you like to export data\n Yes or No')
@@ -413,22 +421,35 @@ class Export:
         file_choice = input()
         if file_choice in ['New', 'new', 'n', 'N']:
             self.export_data_new()
-        else:
+        elif file_choice in ['existing', 'Existing', 'old', 'Old']:
             self.export_data_existing()
         
     def export_data_new(self):
         file_name = input('what would you like to name the file?\n')
+        password_control = input('Would you like to password protect your file\nYes or No\n')
+        if password_control in ['y', 'Y', 'yes', 'Yes']:
+            self.password = input('Enter your passowrd:\n')
+            self.password_switch = True
+            self.password = sha256(self.password.encode('utf-8')).hexdigest()
+            db.password_manager[file_name] = self.password
         open(f'{file_name}.txt', 'w')
         self.write_full_table(file_name)
 
     def export_data_existing(self):
         file_name = input('What is the name of the file you want to save to?\n')
+        self.password_check(file_name)
+        if self.password_fail:
+            self.export_control()
         self.write_full_table(file_name)
 
     def write_full_table(self, file_name):
         self.get_time_and_date()
         with open(f'{file_name}.txt', 'a') as f:
-            f.write(f'\n\n{self.current_date} {self.current_time}\n\n')
+            if self.password_switch:
+                f.write(f'\n\n{self.current_date} {self.current_time}\n')
+                f.write(f'{file_name}: {self.password}\n\n')
+            else:
+                f.write(f'\n\n{self.current_date} {self.current_time}\n\n')
             for people in db.names_list:
                 for data_type in db.data_directory.keys():
                     f.write(f'{data_type}: ')
@@ -444,6 +465,27 @@ class Export:
         self.current_time = current_time
         today = date.today()
         self.current_date = today
+    
+    def password_check(self, file_name):
+        password_fail = 0
+        with open(f'{file_name}.txt', 'r') as f:
+            lines = f.readlines()
+            pw = lines[3]
+            if pw.startswith(file_name):
+                    print('This file is password protected')
+                    print(f'please enter the password for {file_name}')
+                    while True:
+                        unlock_password = input()
+                        unlock_password = sha256(unlock_password.encode('utf-8')).hexdigest()
+                        true_password = pw.split(':')[1].strip()
+                        if true_password == unlock_password:
+                            break
+                        password_fail += 1
+                        print(f'try again {3 - password_fail}')
+                        if password_fail == 3:
+                            print('Too many failed atempts')
+                            print('program ending')
+                            self.password_fail = True
 
 class ImportFile:
     def __init__(self, db):
@@ -456,15 +498,38 @@ class ImportFile:
     def read_file(self, file_name):
         with open(f'{file_name}.txt', 'r') as f:
             lines = f.readlines()
-            self.populate_database(lines)
+            self.password_read(lines, file_name)
+            self.populate_database(lines, file_name)
 
-    def populate_database(self, lines):
+    def password_read(self, lines, file_name):
+        password_fail = 0
+        pw = lines[3]
+        if pw.startswith(file_name):
+                print('This file is password protected')
+                print(f'please enter the password for {file_name}')
+                while True:
+                    unlock_password = input()
+                    unlock_password = sha256(unlock_password.encode('utf-8')).hexdigest()
+                    true_password = pw.split(':')[1].strip()
+                    if true_password == unlock_password:
+                        break
+                    password_fail += 1
+                    print(f'try again {3 - password_fail}')
+                    if password_fail == 3:
+                        print('Too many failed atempts')
+                        print('program ending')
+                        sys.exit()
+
+    def populate_database(self, lines, file_name):
         current_name = None
         for line in lines:
             line = line.strip()
             if not line:
                 continue
-            if line.startswith('Name:'):
+            if line.startswith(file_name):
+                pw_hash = line.split(':')[1].strip()
+                db.password_manager[file_name] = pw_hash
+            elif line.startswith('Name:'):
                 current_name = line.split(':')[1].strip()
                 if current_name not in db.names_list:
                     db.names_list.append(current_name)
