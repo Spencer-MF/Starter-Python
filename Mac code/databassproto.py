@@ -172,14 +172,16 @@ class Database:
                 min_time.append(days)
                 min_time_name.append(name)
             elif days < min(min_time)-1:
-                if days == min(min_time):
-                    x_way_tie += 1
                 min_time.append(days)
                 min_time_name.append(name)
+            elif days == min(min_time):
+                    x_way_tie += 1
+                    min_time.append(days)
+                    min_time_name.append(name)
         for i in range(x_way_tie + 1):    
-            name = min_time_name[i]
+            name = min_time_name[-(i + 1)]
             min_time_name_tie.append(name)
-        name = min_time_name[0]
+        name = min_time_name[-1]
         mm, dd = self.time_till_birthday(name)
         return min_time_name_tie, mm, dd
 
