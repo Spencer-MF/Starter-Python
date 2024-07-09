@@ -56,7 +56,7 @@ class Database:
                 break
             else:
                 print('Invalid name try again')
-        print('What type of info would you like to change?\n Name, Phonenumber, Age, or Notes\n')
+        print('What type of info would you like to change?\n Name, Phonenumber, Date of Birth, or Notes\n')
         invalid = True
         while invalid:
             data_type = self.multi_choice()
@@ -67,7 +67,7 @@ class Database:
             if self.lists_overlap(data_type, ['2', 'Phonenumber', 'number', 'phone', 'phonenumber', 'Number', 'Phone']):
                 self.number_change(name)
                 hit += 1
-            if self.lists_overlap(data_type, ['3', 'date of birth', 'date', 'Date of Birth', 'birth', 'Date', 'birth', 'Date of birth']):
+            if self.lists_overlap(data_type, ['3', 'date of birth', 'date', 'Date of Birth', 'birth', 'Date', 'birth', 'Date of birth', 'dob', 'DoB']):
                 self.dob_change(name)
                 hit += 1
             if self.lists_overlap(data_type, ['4', 'Notes', 'notes', 'note', 'Note']):
