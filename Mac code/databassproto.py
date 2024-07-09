@@ -368,11 +368,9 @@ class FrontEnd:
         else:
             names_list = name[0]
             is_or_are = 'is'
-        if minimum < 1:
-
+        if int(minimum) < 1:
             responce += 1
-        if maximum > 10000:
-
+        if int(maximum) > 10000:
             responce += 2
         if responce == 0:
             print(f'{total_poeple} {is_or_are} in the age range {minimum} to {maximum} years old\n{names_list}')
