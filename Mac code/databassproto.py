@@ -1,7 +1,14 @@
 import time
 import sys
+import signal
+import os
 from datetime import date
 from hashlib import sha256
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad, unpad
+from Crypto.Random import get_random_bytes
+
+TIMEOUT = 5
 
 class Database:
 
@@ -29,7 +36,7 @@ class Database:
                 data[in_name] = in_name
             else:
                 if data_type == 'Date of Birth':
-                    print('yyyy-mm-dd format (with dashes)')
+                    print('mm-dd-yyyy format (with dashes)')
                 in_data = input()
                 if in_data == '':
                     in_data = None
@@ -94,7 +101,7 @@ class Database:
         self.phone_numbers[name] = new_number
 
     def dob_change(self, name):
-        new_age = input(f"What would you like to change {name}'s date of birth to?\nyyyy-mm-dd format (with dashes)\n")
+        new_age = input(f"What would you like to change {name}'s date of birth to?\nmm-dd-yyyy format (with dashes)\n")
         self.dob[name] = new_age
 
     def notes_change(self, name):
@@ -142,9 +149,9 @@ class Database:
         today = str(date.today())
         today_list = today.split('-')
         dob = dob.split('-')
-        delta_year = int(today_list[0]) - int(dob[0])
-        delta_month = int(today_list[1]) - int(dob [1])
-        delta_day = int(today_list[2]) - int(dob[2])
+        delta_year = int(today_list[0]) - int(dob[2])
+        delta_month = int(today_list[1]) - int(dob [0])
+        delta_day = int(today_list[2]) - int(dob[1])
         if delta_month < 0 and delta_day < 0:
             delta_year -= 1
         return delta_year, delta_month, delta_day
@@ -161,15 +168,16 @@ class Database:
         elif dd < 0:
             dm -= 1
             dd -= self.month()
-        return dm, dd
+        return dm, dd, dy + 1
 
     def closest_birthday(self):
         min_time = []
         min_time_name = []
         x_way_tie = 0
         min_time_name_tie = []
+        ages = []
         for name in self.names_list:
-            dm, dd = self.time_till_birthday(name)
+            dm, dd, dy = self.time_till_birthday(name)
             days_converted_from_months = self.month_to_day(dm)
             days = dd + days_converted_from_months
             if not min_time:
@@ -185,9 +193,13 @@ class Database:
         for i in range(x_way_tie + 1):    
             name = min_time_name[-(i + 1)]
             min_time_name_tie.append(name)
+            mm, dd, turing_years_old = self.time_till_birthday(name)
+            ages.append(turing_years_old)
         name = min_time_name[-1]
-        mm, dd = self.time_till_birthday(name)
-        return min_time_name_tie, mm, dd
+        mm, dd, dy = self.time_till_birthday(name)
+        if not ages:
+            ages.append(dy)
+        return min_time_name_tie, mm, dd, ages
 
     def in_age_range(self):
         minmax = str(input('Type the min age then a space then the max age for no min or max type None or type - instead:\n'))
@@ -351,16 +363,16 @@ class FrontEnd:
             if name in db.names_list:
                 age, m, d = db.age_calc(name)
                 print(f'{name} is {age} years old')
-                cont = input('To edit another person press Enter: ')
+                cont = input("To find another person's agepress Enter: ")
             else:
                 print(f'{name} not found in database')
             if cont != '':
                 break
 
     def next_birthday_specific(self):
-        name = input("Who's age would you like to know?\n")
-        mm, dd = db.time_till_birthday(name)
-        print(f"There are {mm} months and {dd} days till {name}'s next birthday\n")
+        name = input("Who's next birthday would you like to know?\n")
+        mm, dd, dy = db.time_till_birthday(name)
+        print(f"There are {mm} months and {dd} days till {name}'s next birthday!\n{name} is turning {dy} years old")
 
     def people_age_range(self):
         responce = 0
@@ -386,23 +398,37 @@ class FrontEnd:
             print(f'{total_poeple} {is_or_are} in the database with an age\n{names_list}')
 
     def next_birthday(self):
-        name, mm, dd = db.closest_birthday()
-        if len(name) > 1:
+        name, mm, dd, dy = db.closest_birthday()
+        name = self.merge_lists(name, dy)
+        num_people = len(name)
+        has_or_have = 'have'
+        person_or_people = 'people'
+        if num_people > 1:
             names_list = ', '.join(name[:-1]) + ', and ' + name[-1]
         else:
             names_list = name[0]
-        print(f'{names_list} has the closest birthday!\nIt is in {mm} months and {dd} days')
+            has_or_have = 'has'
+            person_or_people = 'person'
+        print(f'{num_people} {person_or_people} {has_or_have} the closest birthday!\nIt is in {mm} months and {dd} days\nThey are {names_list}')
+    
+    def merge_lists(self, list1, list2):
+    # Ensure both lists are of the same length
+        if len(list1) != len(list2):
+            raise ValueError("Both lists must have the same length")
+    
+    # Merge the lists
+        merged_list = [f'{list1[i]} turing {list2[i]} years old' for i in range(len(list1))]
+        return merged_list
 
 class Export:
 
-    def __init__(self, db):
+    def __init__(self, db, ed):
         self.db = db
-        self.im = im
+        self.ed = ed
         self.current_time = None
         self.current_date = None
         self.password = None
         self.password_switch = False
-        self.password_fail = False
 
     def export_control(self):
         print('Would you like to export data\n Yes or No')
@@ -434,17 +460,21 @@ class Export:
             db.password_manager[file_name] = self.password
         open(f'{file_name}.txt', 'w')
         self.write_full_table(file_name)
+        ed.encrypt_master(file_name)
 
     def export_data_existing(self):
         file_name = input('What is the name of the file you want to save to?\n')
-        self.password_check(file_name)
-        if self.password_fail:
-            self.export_control()
-        self.write_full_table(file_name)
+        ed.decrypt_file_master(file_name)
+        if ed.confirm_file:
+            if ed.password_fail:
+                self.export_control()
+            self.write_full_table(file_name)
+            ed.encrypt_master(file_name)
 
     def write_full_table(self, file_name):
         self.get_time_and_date()
         with open(f'{file_name}.txt', 'a') as f:
+            f.write(ed.file_format_encode)
             if self.password_switch:
                 f.write(f'\n\n{self.current_date} {self.current_time}\n')
                 f.write(f'{file_name}: {self.password}\n\n')
@@ -465,60 +495,28 @@ class Export:
         self.current_time = current_time
         today = date.today()
         self.current_date = today
-    
-    def password_check(self, file_name):
-        password_fail = 0
+
+    def file_check(self, file_name):
         with open(f'{file_name}.txt', 'r') as f:
             lines = f.readlines()
-            pw = lines[3]
-            if pw.startswith(file_name):
-                    print('This file is password protected')
-                    print(f'please enter the password for {file_name}')
-                    while True:
-                        unlock_password = input()
-                        unlock_password = sha256(unlock_password.encode('utf-8')).hexdigest()
-                        true_password = pw.split(':')[1].strip()
-                        if true_password == unlock_password:
-                            break
-                        password_fail += 1
-                        print(f'try again {3 - password_fail}')
-                        if password_fail == 3:
-                            print('Too many failed atempts')
-                            print('program ending')
-                            self.password_fail = True
+            file_format = lines[0]
+            if not file_format.startswith(ex.file_format_encode):
+                print('Incompatable file format')
+                print('Returing to main menu')
+                self.compatiable_file = False  
 
 class ImportFile:
-    def __init__(self, db):
+    def __init__(self, db, ed):
         self.db = db
+        self.ed = ed
 
     def what_file(self):
         file_name = input('What is the name of the file that you would like to read?\n')
-        self.read_file(file_name)
-
-    def read_file(self, file_name):
-        with open(f'{file_name}.txt', 'r') as f:
-            lines = f.readlines()
-            self.password_read(lines, file_name)
-            self.populate_database(lines, file_name)
-
-    def password_read(self, lines, file_name):
-        password_fail = 0
-        pw = lines[3]
-        if pw.startswith(file_name):
-                print('This file is password protected')
-                print(f'please enter the password for {file_name}')
-                while True:
-                    unlock_password = input()
-                    unlock_password = sha256(unlock_password.encode('utf-8')).hexdigest()
-                    true_password = pw.split(':')[1].strip()
-                    if true_password == unlock_password:
-                        break
-                    password_fail += 1
-                    print(f'try again {3 - password_fail}')
-                    if password_fail == 3:
-                        print('Too many failed atempts')
-                        print('program ending')
-                        sys.exit()
+        ed.decrypt_file_master(file_name)
+        if ed.confirm_file:
+            with open(f'{file_name}.txt', 'r') as f:
+                lines = f.readlines()
+                self.populate_database(lines, file_name)            
 
     def populate_database(self, lines, file_name):
         current_name = None
@@ -543,11 +541,164 @@ class ImportFile:
             elif line.startswith('Notes:'):
                 if current_name:
                     db.notes[current_name] = line.split(':')[1].strip()
+        os.remove(f'{file_name}.txt')
+
+class TimeoutException(Exception):
+    pass
+
+class EncryptDecrypt:
+    
+    def __init__(self, db, te):
+        self.db = db
+        self.te = te
+
+        self.file_format_encode = self.proprietary_file_format()
+        self.import_fail = False
+        self.password_fail = False
+        self.compatiable_file = True
+        self.decryption_tries = 0
+        self.confirm_file = False
+
+    def encrypt_master(self, file_name):
+        password = input('Enter the Encrpytion Key\n(for encrpytion)\n')
+        encrypted_txt = self.encryption(file_name, password)
+        os.remove(f'{file_name}.txt')
+        self.write_encrpyed_file(file_name, encrypted_txt)        
+    
+    def encryption(self, file_name, key):
+        key = sha256(key.encode('utf-8')).digest()
+        with open(f'{file_name}.txt', 'r') as f:
+            text = f.read()
+            if not text.startswith(self.file_format_encode):
+                print('Incorrect Encrpytion Key try again')
+                self.encrypt_master(file_name)
+        # Generate a random initialization vector (IV)
+        iv = get_random_bytes(16)
+        # Create AES cipher object
+        cipher = AES.new(key, AES.MODE_CBC, iv)
+        # Pad the plain text to be a multiple of 16 bytes
+        padded_text = pad(text.encode(), AES.block_size)
+        # Encrypt the padded text
+        encrypted_text = cipher.encrypt(padded_text)
+        # Return the IV and the encrypted text
+        return iv + encrypted_text
+    
+    def write_encrpyed_file(self, file_name, text):
+        with open(f'{file_name}.mf', 'wb') as f:
+            f.write(text)
+    
+    def proprietary_file_format(self):
+        pff= "This is Spencer's file format"
+        pff = sha256(pff.encode('utf-8')).hexdigest()
+        return ' '.join(['Proprietary file:', pff])
+
+    def decrypt_file_master(self, file_name):
+        text = self.decrypt_file(file_name)
+        self.temp_txt_file(file_name, text)
+        self.read_file(file_name)
+    
+    def decrypt_file(self, file_name):
+        decryption_tries = 0
+        key = input('Enter the Encrpytion Key:\n(for decrpytion)\n')
+        with open(f'{file_name}.mf', 'rb') as f:
+            encrypted_text = f.read()
+        while True:
+            try:
+                key = sha256('chyper'.encode('utf-8')).digest()
+                decrypted_text = self.decrypt_text(encrypted_text, key)
+                return decrypted_text
+            except ValueError:
+                print('incorrect Encryption Key try again')
+                decryption_tries += 1
+                print(f'{3 - decryption_tries} attempts left')
+                if decryption_tries == 3:
+                    print('Too many failed atempts')
+                    print('program ending')
+                    sys.exit()    
+                key = input('Enter the Encrpytion Key:\n(for decrpytion)\n')
+
+    def temp_txt_file(self, file_name, text):
+        with open(f'{file_name}.txt', 'w') as f:
+            f.write(text)
+
+    def decrypt_text(self, encrypted_text, key):
+        # Extract the initialization vector (IV) from the encrypted text
+        iv = encrypted_text[:16]
+        encrypted_text = encrypted_text[16:]
+        # Create AES cipher object
+        cipher = AES.new(key, AES.MODE_CBC, iv)
+        # Decrypt the encrypted text
+        padded_text = cipher.decrypt(encrypted_text)
+        # Unpad the decrypted text
+        plain_text = unpad(padded_text, AES.block_size)
+        return plain_text.decode()
+
+    def read_file(self, file_name):
+        with open(f'{file_name}.txt', 'r') as f:
+            lines = f.readlines()
+            self.file_check(lines)
+            if self.compatiable_file:
+                self.password_read(lines, file_name)
+                if not self.import_fail:
+                    self.populate_trigger()
+
+    def populate_trigger(self):
+        ed.confirm_file = True 
+
+    def file_check(self, lines):
+        file_format = lines[0]
+        if not file_format.startswith(self.file_format_encode):
+            print('Incompatable file format')
+            print('Returing to main menu')
+            self.compatiable_file = False 
+
+    def password_read(self, lines, file_name):
+        signal.signal(signal.SIGALRM, self.timeout_handler)
+        signal.alarm(TIMEOUT)
+        password_fail = 0
+        pw = lines[3]
+        if pw.startswith(file_name):
+            print('This file is password protected')
+            print(f'please enter the password for {file_name}')
+            while True:
+                signal.alarm(TIMEOUT)
+                unlock_password = self.input_password(file_name)
+                if unlock_password != None:
+                    unlock_password = sha256(unlock_password.encode('utf-8')).hexdigest()
+                    true_password = pw.split(':')[1].strip()
+                    if true_password == unlock_password:
+                        signal.alarm(0)
+                        break
+                    password_fail += 1
+                else:
+                    self.import_fail = True
+                    self.password_fail = True
+                    break
+                print(f'try again {3 - password_fail}')
+                if password_fail == 3:
+                    print('Too many failed atempts')
+                    print('program ending')
+                    self.import_fail = True
+                    break    
+
+    def input_password(self, file_name):
+        try:
+            password = input()
+            return password
+        except TimeoutException:
+            os.remove(f'{file_name}.txt')
+            print('You took to long to input password')
+            return None          
+
+    def timeout_handler(self, signum, frame):
+        raise TimeoutException
 
 db = Database()
-im = ImportFile(db)
+te = TimeoutException()
+ed = EncryptDecrypt(db, te)
+ex = Export(db, ed)
+im = ImportFile(db, ed)
 fr = FrontEnd(db, im)
-ex = Export(db)
 def main():
     fr.control_panal()
     ex.export_control()
