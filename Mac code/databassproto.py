@@ -2,6 +2,7 @@ import time
 import sys
 import signal
 import os
+import fileinput
 from datetime import date
 from hashlib import sha256
 from Crypto.Cipher import AES
@@ -219,6 +220,21 @@ class Database:
             names.append('No one in age range')
         return names, minimum, maximum
 
+    def password_control(self, file_name, new_password):
+        old_password = self.password_manager[file_name]
+        while True:
+            new_password = sha256(new_password.encode('utf-8')).hexdigest()
+            if old_password != new_password:
+                self.find_and_replace(file_name, f'{file_name}: {old_password}', f'{file_name}: {new_password}')
+                break
+            else:
+                new_password = input('New password can not be the same as the old password')
+
+    def find_and_replace(self, file_name, find, replace):
+        with fileinput.input(f'{file_name}.txt', inplace=True) as file:
+            for line in file:
+                new_line = line.replace(find, replace)
+                print(new_line, end='')
 
     def num_entries(self):
         num = len(self.names_list)
@@ -281,16 +297,17 @@ class Database:
 
 class FrontEnd:
 
-    def __init__(self, db, im):
+    def __init__(self, db, im, ed):
         self.db = db
         self.im = im
+        self.ed = ed
 
     def control_panal(self):
         print('This is the control panal for this database')
         print('If you would like to add people press 1 if you would like to remove people press 2')
         print("if you would like to see the full database press 3 if you would like to find a spasific person info press 4")
         print('if you would like to know the amount of entries press 5 if you would like to edit a person press 6')
-        print('if you would like to know about the ages of the people press 7')
+        print('if you would like to know about the ages of the people press 7 if you would like to change the password on a file press 8')
         print('if you would like to import a file (this file has to be structed for this database) press 0')
         while True:
             admin_choice = input()
@@ -308,8 +325,10 @@ class FrontEnd:
                 self.edit_people()
             elif admin_choice == '7':
                 self.ages_control_panal()
+            elif admin_choice == '8':
+                self.change_password()
             elif admin_choice == '0':
-                im.what_file()
+                im.what_file('read')
             else:
                 print('Invaid input')
             cont = input('If you would like to continue press enter: ')
@@ -410,6 +429,13 @@ class FrontEnd:
             person_or_people = 'person'
         print(f'{num_people} {person_or_people} {has_or_have} the closest birthday!\nIt is in {mm} months and {dd} days\nThey are {names_list}')
     
+    def change_password(self):
+        im.what_file('change the password to')
+        new_password = input('what would you like the new password to be?\n')
+        db.password_control(im.file, new_password)
+        ed.encrypt_master(im.file)
+        os.remove(f'{im.file}.txt')
+
     def merge_lists(self, list1, list2):
     # Ensure both lists are of the same length
         if len(list1) != len(list2):
@@ -508,9 +534,14 @@ class ImportFile:
     def __init__(self, db, ed):
         self.db = db
         self.ed = ed
+        self.file = None
+        self.question_type = False
 
-    def what_file(self):
-        file_name = input('What is the name of the file that you would like to read?\n')
+    def what_file(self, question_txt):
+        file_name = input(f'What is the name of the file that you would like to {question_txt}?\n')
+        if question_txt != 'read':
+            self.question_type = True
+        self.file = file_name
         ed.decrypt_file_master(file_name)
         if ed.confirm_file:
             with open(f'{file_name}.txt', 'r') as f:
@@ -540,7 +571,9 @@ class ImportFile:
             elif line.startswith('Notes:'):
                 if current_name:
                     db.notes[current_name] = line.split(':')[1].strip()
-        os.remove(f'{file_name}.txt')
+        if not self.question_type:
+            os.remove(f'{file_name}.txt')
+            self.question_type = False
 
 class TimeoutException(Exception):
     pass
@@ -603,7 +636,7 @@ class EncryptDecrypt:
             encrypted_text = f.read()
         while True:
             try:
-                key = sha256('chyper'.encode('utf-8')).digest()
+                key = sha256(key.encode('utf-8')).digest()
                 decrypted_text = self.decrypt_text(encrypted_text, key)
                 return decrypted_text
             except ValueError:
@@ -697,7 +730,7 @@ te = TimeoutException()
 ed = EncryptDecrypt(db, te)
 ex = Export(db, ed)
 im = ImportFile(db, ed)
-fr = FrontEnd(db, im)
+fr = FrontEnd(db, im, ed)
 def main():
     fr.control_panal()
     ex.export_control()
