@@ -25,7 +25,6 @@ class Database:
 
         self.password_manager = {}
 
-
     def input_data(self):
         print('please add the fallowing information about if you '"don't know press enter or type None")
         for data_type in self.data_directory.keys():
