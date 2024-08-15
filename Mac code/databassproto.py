@@ -1,3 +1,5 @@
+# This version of the code only works on macOS, as signal handling differs between macOS and Windows.
+
 import time
 import sys
 import signal
