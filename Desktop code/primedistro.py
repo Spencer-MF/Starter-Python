@@ -85,64 +85,127 @@ class Distropution():
     def __init__(self, pr):
         self.pr = pr
         self.max_prime_value = 0
-        self.ld1 = []
-        self.ld2 = []
-        self.ld3 = []
-        self.ld5 = []
-        self.ld7 = []
-        self.ld9 = []
-        self.lddict = {1:self.ld1, 2:self.ld2, 3:self.ld3, 5:self.ld5, 7:self.ld7, 9:self.ld9}
+        self.LD1 = []
+        self.LD2 = []
+        self.LD3 = []
+        self.LD5 = []
+        self.LD7 = []
+        self.LD9 = []
+        self.LDdict = {1:self.LD1, 2:self.LD2, 3:self.LD3, 5:self.LD5, 7:self.LD7, 9:self.LD9}
+
+    def order(self):
+        self.prime_sorter()
+        self.dist_calc()
 
     def prime_sorter(self):
         n = self.max_prime_value
         for i in range(1, n+1):
             if pr.isPrime(i):
-                self.prime_ld(i)
-        self.dist_calc()
+                self.prime_LD(i)
 
-    def prime_ld(self, prime):
-        ld = prime % 10
-        lst = self.lddict[ld]
+    def prime_LD(self, prime):
+        LD = prime % 10
+        lst = self.LDdict[LD]
         lst.append(prime)
         
     def dist_calc(self):
-        ld1 = len(self.ld1)
-        ld2 = len(self.ld2) 
-        ld3 = len(self.ld3) 
-        ld5 = len(self.ld5)
-        ld7 = len(self.ld7)
-        ld9 = len(self.ld9)
-        total_primes = ld1 + ld2 + ld3 + ld5 + ld7 + ld9
-        ends_in_1 = ld1 / total_primes * 100
-        ends_in_2 = ld2 / total_primes * 100
-        ends_in_3 = ld3 / total_primes * 100
-        ends_in_5 = ld5 / total_primes * 100
-        ends_in_7 = ld7 / total_primes * 100
-        ends_in_9 = ld9 / total_primes * 100
-        print(f'1: {ends_in_1}% {ld1}/{total_primes}\n')
-        print(f'2: {ends_in_2}% {ld2}/{total_primes}\n')
-        print(f'3: {ends_in_3}% {ld3}/{total_primes}\n')
-        print(f'5: {ends_in_5}% {ld5}/{total_primes}\n')
-        print(f'7: {ends_in_7}% {ld7}/{total_primes}\n')
-        print(f'9: {ends_in_9}% {ld9}/{total_primes}\n')
-        
-        
-class Controls():
-    
-    def __init__(self,di):
+        LD1 = len(self.LD1)
+        LD2 = len(self.LD2) 
+        LD3 = len(self.LD3) 
+        LD5 = len(self.LD5)
+        LD7 = len(self.LD7)
+        LD9 = len(self.LD9)
+        total_primes = LD1 + LD2 + LD3 + LD5 + LD7 + LD9
+        ends_in_1 = LD1 / total_primes * 100
+        ends_in_2 = LD2 / total_primes * 100
+        ends_in_3 = LD3 / total_primes * 100
+        ends_in_5 = LD5 / total_primes * 100
+        ends_in_7 = LD7 / total_primes * 100
+        ends_in_9 = LD9 / total_primes * 100
+        print(f'1: {ends_in_1}% {LD1}/{total_primes}\n')
+        print(f'2: {ends_in_2}% {LD2}/{total_primes}\n')
+        print(f'3: {ends_in_3}% {LD3}/{total_primes}\n')
+        print(f'5: {ends_in_5}% {LD5}/{total_primes}\n')
+        print(f'7: {ends_in_7}% {LD7}/{total_primes}\n')
+        print(f'9: {ends_in_9}% {LD9}/{total_primes}\n')
+
+
+class DistroV2():
+
+    def __init__(self, pr, di):
+        self.pr = pr
         self.di = di
+        self.n = 10
+        self.total = 0
+        self.LDdict = {}
+        self.LDratio = {}
+
+    def order(self):
+        self.LDdictSetUp()
+        self.prime_sort()
+        self.calc()
+        self.display()
+
+    def LDdictSetUp(self):
+        for i in range(self.n):
+            self.LDdict[i] = 0
+
+    def prime_sort(self):
+        n = di.max_prime_value
+        for i in range(1, n+1):
+            if pr.isPrime(i):
+                self.prime_LD(i)
+                self.total += 1
     
-    def max_value(self):
+    def prime_LD(self, prime):
+        LD = prime % self.n
+        self.LDdict[LD] += 1
+
+    def calc(self):
+        for key in self.LDdict.keys():
+            self.LDratio[key] = self.LDdict[key] / self.total * 100
+
+    def display(self):
+        for key in self.LDratio.keys():
+            if self.LDratio[key] > 1:
+                print(f'{key}: {self.LDratio[key]}% {self.LDdict[key]}/{self.total}\n')
+            
+class Controls():
+
+    
+    def __init__(self, di, di2):
+        self.di = di
+        self.di2 = di2
+
+    def verstion_con(self):
+        while True:
+            ver = input('what vertion vertion of prime sorter do you want?\n1. First Edition\n2. Second Edition\n')
+            if ver in ['1', '1.', 'FE', 'fe', 'Fe', 'First edition', 'first edition', 'First Edition']:
+                self.max_value_v1()
+                break
+            elif ver in ['2', '2.', 'SE', 'se', 'Se', 'Second edition', 'second edition', 'Second Edition']:
+                self.max_value_v2()
+                break
+            else:
+                print("Invalid input try again")
+    
+    def max_value_v1(self):
         n = int(input('What is the upper bound of the primes you want the distrobution of?\n'))
         di.max_prime_value = n
-        di.prime_sorter()
+        di.order()
 
+    def max_value_v2(self):
+        n = int(input('What is the upper bound of the primes you want the distrobution of?\n'))
+        di.max_prime_value = n
+        di2.order()
+        
 
 pr = Primes()
 di = Distropution(pr)
-con = Controls(di)
+di2 = DistroV2(pr, di)
+con = Controls(di, di2)
 
 def main():
-    con.max_value()
+    con.verstion_con()
 
 Utility.restartCode(main)
