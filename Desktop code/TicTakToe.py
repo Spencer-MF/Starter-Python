@@ -10,11 +10,11 @@ while(True):
 
     def printGameBoard():
         for x in range(rows):
-            print("+---+---+---+")
+            print("\n+---+---+---+")
             print("|", end="")
             for y in range(cols):
-                print("", gameBoard[x][y], end=" |")
-            print("\n+---+---+---+")
+                print("", gameBoard[x][y], end=" |")  
+        print("\n+---+---+---+")
 
     def modifyArray(num, turn):
         num -= 1
@@ -102,7 +102,7 @@ while(True):
 
     while(leaveLoop == False):
     ### It's the players turn
-        if(turnCounter % 2 ==1 ):
+        if(turnCounter % 2 ==0 ):
             printGameBoard()
             numberPicked = int(input("\nChoose a number [1-9]: "))
             if(numberPicked >=1 or numberPicked <=9):
