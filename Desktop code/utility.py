@@ -26,4 +26,4 @@ class Utility():
             if num > 3:
                 return st[3]
             else:
-                return st[num]
+                return st[num - 1]
