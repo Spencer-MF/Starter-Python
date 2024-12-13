@@ -29,20 +29,20 @@ class grade_calculator:
         self.calculator()
 
     def grade_input(self):
-        print('Input the grade catagories and weights then the grade you have each of them')
+        print('Input the grade catagories and weights then the grade you have in each of them')
         while not self.finished_with_inputs:
             catagory_count = len(self.grade_weights) + 1 
             end = Utility.end_of_num(catagory_count)
-            grade_catagory = input (f'Type the {catagory_count}{end} your grade catagories\n')
-            grade_weight = float(input (f'Input the weight of {grade_catagory} in persent\n'))
-            grade = float(input(f'Input your current grade for {grade_catagory} in persent\n'))
+            grade_catagory = input (f'Type the {catagory_count}{end} grade catagory\n')
+            grade_weight = float(input (f'Input the weight of {grade_catagory} in percent\n'))
+            grade = float(input(f'Input your current grade for {grade_catagory} in percent\n'))
             self.grade_weights[grade_catagory] = grade_weight
             self.grades[grade_catagory] = grade
             self.vaild_total_weights += grade_weight
             if self.vaild_total_weights > 100:
                 print('Are you sure that you input the correct grade weights?')
                 Are_you_sure = input('whould you like to restart?\nY/N\n')
-                if Are_you_sure not in ['Y', 'y', 'yes', 'Yes']:
+                if Are_you_sure in ['Y', 'y', 'yes', 'Yes']:
                     self.vaild_total_weights = 0
                     self.grade_weights.clear()
                     self.grades.clear()
@@ -51,7 +51,7 @@ class grade_calculator:
             if finished in ['Y', 'y', 'yes', 'Yes']:
                 self.finished_with_inputs = True
         if self.find_final_goal:
-            self.goal_grade = float(input('What persent would you like to get in this class?\n'))
+            self.goal_grade = float(input('What percent would you like to get in this class?\n'))
         if self.vaild_total_weights == 100:
             self.find_final_goal = False
 
@@ -125,7 +125,7 @@ class request_manager:
             print('Return end at any time to end adcanced menue')
             print('Would you like to see how theoretical final scores effect your grade?')
             theoretical = input('Y/N\n')
-            if theoretical in ['Y', 'y', 'yes', 'Yes'] and not 'end':
+            if theoretical in ['Y', 'y', 'yes', 'Yes']:
                 print('How many theroetical final grades would you like to see?')
                 gc.theoretical_granularity = int(input())
                 gc.find_theoretical_grades = True
