@@ -19,41 +19,55 @@ class grade_calculator:
 
     def final_grade_master(self):
         self.find_final_goal = True
-        self.grade_input()
+        self.final_grade_input_spesical()
         self.calculator()
         self.theoretical_calculator()
         self.display_grades()
 
     def current_grade_master(self):
-        self.grade_input()
+        self.current_grade_input_spescial()
         self.calculator()
+        self.display_grades()
 
     def grade_input(self):
+        catagory_count = len(self.grade_weights) + 1 
+        end = Utility.end_of_num(catagory_count)
+        grade_catagory = input (f'Type the {catagory_count}{end} grade catagory\n')
+        grade_weight = float(input (f'Input the weight of {grade_catagory} in percent\n'))
+        grade = float(input(f'Input your current grade for {grade_catagory} in percent\n'))
+        self.grade_weights[grade_catagory] = grade_weight
+        self.grades[grade_catagory] = grade
+        self.vaild_total_weights += grade_weight
+
+    def final_grade_input_spesical(self):
         print('Input the grade catagories and weights then the grade you have in each of them')
         while not self.finished_with_inputs:
-            catagory_count = len(self.grade_weights) + 1 
-            end = Utility.end_of_num(catagory_count)
-            grade_catagory = input (f'Type the {catagory_count}{end} grade catagory\n')
-            grade_weight = float(input (f'Input the weight of {grade_catagory} in percent\n'))
-            grade = float(input(f'Input your current grade for {grade_catagory} in percent\n'))
-            self.grade_weights[grade_catagory] = grade_weight
-            self.grades[grade_catagory] = grade
-            self.vaild_total_weights += grade_weight
-            if self.vaild_total_weights > 100:
+            self.grade_input()
+            if self.find_final_goal and self.vaild_total_weights > 99:
                 print('Are you sure that you input the correct grade weights?')
                 Are_you_sure = input('whould you like to restart?\nY/N\n')
                 if Are_you_sure in ['Y', 'y', 'yes', 'Yes']:
                     self.vaild_total_weights = 0
                     self.grade_weights.clear()
                     self.grades.clear()
-                    self.grade_input()
+                    self.final_grade_input_spesical()
             finished = input('Are you finished inputing your grades?\nY/N\n')
             if finished in ['Y', 'y', 'yes', 'Yes']:
                 self.finished_with_inputs = True
-        if self.find_final_goal:
-            self.goal_grade = float(input('What percent would you like to get in this class?\n'))
-        if self.vaild_total_weights == 100:
-            self.find_final_goal = False
+            if self.find_final_goal:
+                self.goal_grade = float(input('What percent would you like to get in this class?\n'))
+            if self.vaild_total_weights == 100:
+                self.find_final_goal = False
+    
+    def current_grade_input_spescial(self):
+        while self.vaild_total_weights < 100:
+            self.grade_input()
+        if self.vaild_total_weights > 100:
+            print('Invaild grade weights. Please try again')
+            self.vaild_total_weights = 0
+            self.grade_weights.clear()
+            self.grades.clear()
+            self.current_grade_input_spescial()
 
     def display_grades(self):
         print('catagories: weights grade')
@@ -67,7 +81,7 @@ class grade_calculator:
         if self.find_theoretical_grades:
             print('grade on final -> grade in class')
             for scores, grades in self.theoretical_grades.items():
-                print(f'{scores}% -----> {grades:.2f}%')
+                print(f'{scores:.2f}% -----> {grades:.2f}%')
 
     def calculator(self):
         for catagories, weights in self.grade_weights.items():
@@ -75,9 +89,9 @@ class grade_calculator:
             weight = weights / 100
             grade = grade / 100
             self.current_grade += (weight * grade)
-        final_weight = 1 - self.vaild_total_weights/100
-        self.min_final_grade = (((self.goal_grade/100) - (self.vaild_total_weights/100) * (self.current_grade/self.vaild_total_weights)*100)/(final_weight)) * 100
-        print(self.current_grade/self.vaild_total_weights)
+        if self.find_final_goal:
+            final_weight = 1 - self.vaild_total_weights/100
+            self.min_final_grade = (((self.goal_grade/100) - (self.vaild_total_weights/100) * (self.current_grade/self.vaild_total_weights)*100)/(final_weight)) * 100
 
     def theoretical_calculator(self):
         final_weight = 1 - self.vaild_total_weights/100
@@ -122,7 +136,6 @@ class request_manager:
         print('For more advanced features press return a')
         advanced = input()
         if advanced == 'a':
-            print('Return end at any time to end adcanced menue')
             print('Would you like to see how theoretical final scores effect your grade?')
             theoretical = input('Y/N\n')
             if theoretical in ['Y', 'y', 'yes', 'Yes']:
