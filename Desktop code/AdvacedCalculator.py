@@ -24,9 +24,17 @@ class calculator_back_end:
 
         self.mode_list = [0, 1, 0, 1]
         self.mode = 0
-        self.bg = 'white' 
-        self.sybmol_color = 'black'
-        self.grid = 'black'
+
+        self.color_palette = ['white', 'black', 'blue', 'red']
+        self.color_palette_inv = ['black', 'white', 'red', 'blue']
+        self.theme = 0
+        self.total_themes = len(self.color_palette)
+        self.bg = self.color_palette[self.theme] 
+        self.sybmol_color = self.color_palette_inv[self.theme]
+        self.grid = self.color_palette_inv[self.theme]
+
+        self.opperation_symbols = ['+', '−', '×', '÷']
+        self.bottom_row_symbols = ['.', '0', '=']
 
         self.canvas = tk.Canvas(root, width=CANVAS_SIZE, height=CANVAS_SIZE, background=self.bg)    # makes that the window
         self.canvas.pack()
@@ -35,6 +43,8 @@ class calculator_back_end:
         root.bind('<Key-M>', self.mode_controller)
         root.bind('<Key-c>', self.clear_botton)
         root.bind('<Key-C>', self.clear_botton)
+        root.bind('<Key-t>', self.themes)
+        root.bind('<Key-T>', self.themes)
 
         self.display()
         self.mode_display()
@@ -44,10 +54,12 @@ class calculator_back_end:
         if self.mode_list[self.mode] == 1:
             if self.equals:
                 if self.answer == None:
+                    print('part 1')
                     self.store_number()
                     self.math_mode_1()
-                self.answer_display()
+                print('part 2')
                 self.equals = False
+                self.answer = None
             elif len(self.all_numbers) == 2:
                 self.math_mode_1()
         elif self.equals:
@@ -72,7 +84,9 @@ class calculator_back_end:
             self.number_digit.append('.')
         elif self.x == 3:
             self.opperation = self.opperation_list[self.y-1]
-            self.store_number()
+            self.store_operation()
+            if len(self.number_digit) > 0:
+                self.store_number()
             print(self.all_numbers)
         elif n < 0 :
             self.number_digit.append(number)
@@ -83,9 +97,12 @@ class calculator_back_end:
     def store_number(self):
         n = self.digit_converter(self.number_digit)
         self.all_numbers.append(n)
-        self.all_opperations.append(self.opperation)
         self.number_digit = []
         self.opperation = None
+    
+    def store_operation(self):
+        if self.opperation != None:
+            self.all_opperations.append(self.opperation)
 
     def digit_converter(self, nums): 
         return float(''.join(str(i) for i in nums)) # Generator exp.
@@ -93,8 +110,7 @@ class calculator_back_end:
     def digit_converter_int(self, nums): 
         return int(''.join(str(i) for i in nums)) # Generator exp.
 
-    def math_mode_0(self):
-        print(self.all_numbers)
+    def in_series_math(self):
         if self.all_opperations[0] == '+':
             self.answer = self.all_numbers[0] + self.all_numbers[1]
         elif  self.all_opperations[0] == '-':
@@ -103,33 +119,35 @@ class calculator_back_end:
             self.answer = self.all_numbers[0] * self.all_numbers[1]
         elif self.all_opperations[0] == '/':
             self.answer = self.all_numbers[0] / self.all_numbers[1]
+
+    def math_mode_0(self):
+        print(self.all_numbers)
+        self.in_series_math()
         self.all_numbers.clear()
         self.all_opperations.clear()
         print(self.answer)
         self.answer_display()
     
-
-    # this funtion is broken and needs to be fixed
     def math_mode_1(self):
-        if self.all_opperations[0] == '+':
-            self.answer = self.all_numbers[0] + self.all_numbers[1]
-        elif  self.all_opperations[0] == '-':
-            self.answer = self.all_numbers[0] - self.all_numbers[1]
-        elif self.all_opperations[0] == 'x':
-            self.answer = self.all_numbers[0] * self.all_numbers[1]
-        elif self.all_opperations[0] == '/':
-            self.answer = self.all_numbers[0] / self.all_numbers[1]
+        print(self.all_numbers, self.all_opperations)
+        self.in_series_math()
         self.all_opperations.pop(0)
         self.all_numbers.clear()
         self.all_numbers.append(self.answer)
         self.answer_display()
         print(self.all_numbers, self.all_opperations)
 
-    def mode_controller(self, event):
+    def mode_controller(self, event=None):
         self.mode = (self.mode + 1) % len(self.mode_list)
         self.update_screen()
         self.clear_all_data()
-        
+    
+    def themes(self, event=None):
+        self.theme = (self.theme + 1) % self.total_themes
+        self.bg = self.color_palette[self.theme]
+        self.sybmol_color = self.color_palette_inv[self.theme]
+        self.grid = self.color_palette_inv[self.theme]
+        self.reset_screen()
 
     def answer_display(self):
         if self.answer % 1 == 0:
@@ -157,7 +175,7 @@ class calculator_back_end:
                             fill=self.grid
                             )
     
-    def clear_botton(self, event):
+    def clear_botton(self, event=None):
         self.clear_all_data()
         self.update_screen()
 
@@ -172,6 +190,11 @@ class calculator_back_end:
         self.display()
         self.mode_display()
     
+    def reset_screen(self):
+        self.canvas.config(bg=self.bg)
+        self.update_screen()
+        self.canvas.update_idletasks()
+    
     def mode_display(self):
         self.canvas.create_text(BUTTON_SIZE_X // 4,
                             BUTTON_SIZE_Y // 4,
@@ -182,7 +205,7 @@ class calculator_back_end:
 
 
     def display(self):
-        # these two for loops each raw two lines this first one is vertical and the second one is horizontal, it incroments them 1 and 2 square sizes so each square is the same size
+        # these two for loops each raw three and four lines this first one is vertical and the second one is horizontal, it incroments them in sets square sizes so each square is the same size
         for i in range (1, 4):
             self.canvas.create_line(BUTTON_SIZE_X * i,
                                 BUTTON_SIZE_Y,
@@ -207,55 +230,28 @@ class calculator_back_end:
                                 font=('Terminal', TEXT_SIZE),
                                 fill=self.grid
                                 )
-        self.canvas.create_text(BUTTON_SIZE_X * 1 - BUTTON_SIZE_X/2,
-                                BUTTON_SIZE_Y * 4  + BUTTON_SIZE_Y/2,
-                                text= '.',
-                                font=('Terminal', TEXT_SIZE),
-                                fill=self.grid
-                                )
-        self.canvas.create_text(BUTTON_SIZE_X * 2 - BUTTON_SIZE_X/2,
-                                BUTTON_SIZE_Y * 4  + BUTTON_SIZE_Y/2,
-                                text= '0',
-                                font=('Terminal', TEXT_SIZE),
-                                fill=self.grid
-                                )
-        self.canvas.create_text(BUTTON_SIZE_X * 3 - BUTTON_SIZE_X/2,
-                                BUTTON_SIZE_Y * 4  + BUTTON_SIZE_Y/2,
-                                text= '=',
-                                font=('Terminal', TEXT_SIZE),
-                                fill=self.grid
-                                )
-        self.canvas.create_text(BUTTON_SIZE_X * 4 - BUTTON_SIZE_X/2,
-                                BUTTON_SIZE_Y * 1  + BUTTON_SIZE_Y/2,
-                                text= '+',
-                                font=('Terminal', TEXT_SIZE),
-                                fill=self.grid
-                                )
-        self.canvas.create_text(BUTTON_SIZE_X * 4 - BUTTON_SIZE_X/2,
-                                BUTTON_SIZE_Y * 2  + BUTTON_SIZE_Y/2,
-                                text= '−',
-                                font=('Terminal', TEXT_SIZE),
-                                fill=self.grid
-                                )
-        self.canvas.create_text(BUTTON_SIZE_X * 4 - BUTTON_SIZE_X/2,
-                                BUTTON_SIZE_Y * 3  + BUTTON_SIZE_Y/2,
-                                text= '×',
-                                font=('Terminal', TEXT_SIZE),
-                                fill=self.grid
-                                )
-        self.canvas.create_text(BUTTON_SIZE_X * 4 - BUTTON_SIZE_X/2,
-                                BUTTON_SIZE_Y * 4  + BUTTON_SIZE_Y/2,
-                                text= '÷',
-                                font=('Terminal', TEXT_SIZE),
-                                fill=self.grid
-                                )
-        
+                
+        for x in range(1, 4):
+            self.canvas.create_text(BUTTON_SIZE_X * x - BUTTON_SIZE_X/2,
+                                    BUTTON_SIZE_Y * 4  + BUTTON_SIZE_Y/2,
+                                    text= self.bottom_row_symbols[x - 1],
+                                    font=('Terminal', TEXT_SIZE),
+                                    fill=self.grid
+                                    )
+        for y in range(1, 5):
+            self.canvas.create_text(BUTTON_SIZE_X * 4 - BUTTON_SIZE_X/2,
+                                    BUTTON_SIZE_Y * y  + BUTTON_SIZE_Y/2,
+                                    text= self.opperation_symbols[y - 1],
+                                    font=('Terminal', TEXT_SIZE),
+                                   fill=self.grid
+                                    )
+
 
 def main():
     root = tk.Tk()                                                        # Create the main window
     root.title('Advanced Calculator')                                             # titles the window
-    game = calculator_back_end(root)                                                 # runs the game
-    root.mainloop()                                                       # makes keeps the game running untill closed manualy
+    game = calculator_back_end(root)                                                 # runs the calculator
+    root.mainloop()                                                       # makes keeps the calculator running untill closed manualy
 
 # calls the function 
 main()
