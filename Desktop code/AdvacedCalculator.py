@@ -3,7 +3,7 @@ import tkinter as tk
 CANVAS_SIZE = 1200
 BUTTON_SIZE_X = CANVAS_SIZE // 4
 BUTTON_SIZE_Y = CANVAS_SIZE // 5
-TEXT_SIZE = 200
+TEXT_SIZE = CANVAS_SIZE // 6
 
 class calculator_back_end:
 
@@ -35,8 +35,6 @@ class calculator_back_end:
         root.bind('<Key-M>', self.mode_controller)
         root.bind('<Key-c>', self.clear_botton)
         root.bind('<Key-C>', self.clear_botton)
-        root.bind('<Key-r>', self.reset)
-        root.bind('<Key-R>', self.reset)
 
         self.display()
         self.mode_display()
@@ -44,8 +42,12 @@ class calculator_back_end:
     def logic_controler(self):
         self.input_decoder()
         if self.mode_list[self.mode] == 1:
-            if self.equals and self.answer != None:
-                self.answer_display() 
+            if self.equals:
+                if self.answer == None:
+                    self.store_number()
+                    self.math_mode_1()
+                self.answer_display()
+                self.equals = False
             elif len(self.all_numbers) == 2:
                 self.math_mode_1()
         elif self.equals:
@@ -109,18 +111,19 @@ class calculator_back_end:
 
     # this funtion is broken and needs to be fixed
     def math_mode_1(self):
-        if self.all_opperations[-1] == '+':
+        if self.all_opperations[0] == '+':
             self.answer = self.all_numbers[0] + self.all_numbers[1]
-        elif  self.all_opperations[-1] == '-':
+        elif  self.all_opperations[0] == '-':
             self.answer = self.all_numbers[0] - self.all_numbers[1]
-        elif self.all_opperations[-1] == 'x':
+        elif self.all_opperations[0] == 'x':
             self.answer = self.all_numbers[0] * self.all_numbers[1]
-        elif self.all_opperations[-1] == '/':
+        elif self.all_opperations[0] == '/':
             self.answer = self.all_numbers[0] / self.all_numbers[1]
-        self.all_opperations.pop()
+        self.all_opperations.pop(0)
         self.all_numbers.clear()
         self.all_numbers.append(self.answer)
-        print(self.all_numbers)
+        self.answer_display()
+        print(self.all_numbers, self.all_opperations)
 
     def mode_controller(self, event):
         self.mode = (self.mode + 1) % len(self.mode_list)
@@ -168,10 +171,6 @@ class calculator_back_end:
         self.canvas.delete('all')
         self.display()
         self.mode_display()
-    
-    def reset(self):
-        self.clear_botton()
-
     
     def mode_display(self):
         self.canvas.create_text(BUTTON_SIZE_X // 4,
