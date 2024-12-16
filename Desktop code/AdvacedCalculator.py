@@ -54,10 +54,8 @@ class calculator_back_end:
         if self.mode_list[self.mode] == 1:
             if self.equals:
                 if self.answer == None:
-                    print('part 1')
                     self.store_number()
                     self.math_mode_1()
-                print('part 2')
                 self.equals = False
                 self.answer = None
             elif len(self.all_numbers) == 2:
