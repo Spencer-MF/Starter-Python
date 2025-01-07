@@ -45,12 +45,12 @@ class calculator_back_end:
         root.bind('<Key-C>', self.clear_botton)
         root.bind('<Key-t>', self.themes)
         root.bind('<Key-T>', self.themes)
+        root.bind('<Return>', self.equals_keybind)
 
         self.display()
         self.mode_display()
 
     def logic_controler(self):
-        self.input_decoder()
         if self.mode_list[self.mode] == 1:
             if self.equals:
                 if self.answer == None:
@@ -68,7 +68,7 @@ class calculator_back_end:
     def keypad_input(self, event):
         self.x = event.x // BUTTON_SIZE_X
         self.y = event.y // BUTTON_SIZE_Y
-        self.logic_controler()
+        self.input_decoder()
 
     def input_decoder(self):
         number = 3*(self.y-1)+self.x+1
@@ -90,7 +90,8 @@ class calculator_back_end:
             self.number_digit.append(number)
             self.input_display()
         else:
-            self.equals = True         
+            self.equals = True
+        self.logic_controler()         
         
     def store_number(self):
         n = self.digit_converter(self.number_digit)
@@ -183,6 +184,10 @@ class calculator_back_end:
         self.answer = None
         self.number_digit.clear()
 
+    def equals_keybind(self, event=None):
+        self.equals = True
+        self.logic_controler()
+
     def update_screen(self):
         self.canvas.delete('all')
         self.display()
@@ -247,8 +252,8 @@ class calculator_back_end:
 
 def main():
     root = tk.Tk()                                                        # Create the main window
-    root.title('Advanced Calculator')                                             # titles the window
-    game = calculator_back_end(root)                                                 # runs the calculator
+    root.title('Advanced Calculator')                                     # titles the window
+    game = calculator_back_end(root)                                      # runs the calculator
     root.mainloop()                                                       # makes keeps the calculator running untill closed manualy
 
 # calls the function 
