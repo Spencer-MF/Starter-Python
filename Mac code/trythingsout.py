@@ -146,24 +146,37 @@ def decrypt_text(encrypted_text, key):
 
     return plain_text.decode()
 
-# Example usage
-plain_text = "This is a secret message."
-key = sha256('chyper'.encode('utf-8')).digest()
-"""
-# Encrypt the text
-encrypted_text = encrypt_text(plain_text, key)
-print(f"Encrypted text (bytes): {encrypted_text}")
-"""
-file_name = 'test'
-with open(f'{file_name}.mf', 'rb') as f:
-    encrypted_text = f.read()
-print(encrypted_text)
-print(key)
+def encrpytion_test():
+    # Example usage
+    plain_text = "This is a secret message."
+    key = sha256('chyper'.encode('utf-8')).digest()
+    """
+    # Encrypt the text
+    encrypted_text = encrypt_text(plain_text, key)
+    print(f"Encrypted text (bytes): {encrypted_text}")
+    """
+    file_name = 'test'
+    with open(f'{file_name}.mf', 'rb') as f:
+        encrypted_text = f.read()
+    print(encrypted_text)
+    print(key)
 
-# Decrypt the text
-try:
-    decrypted_text = decrypt_text(encrypted_text, key)
-    print(f"Decrypted text: {decrypted_text}")
-except ValueError:
-    print('no')
+    # Decrypt the text
+    try:
+        decrypted_text = decrypt_text(encrypted_text, key)
+        print(f"Decrypted text: {decrypted_text}")
+    except ValueError:
+        print('no')
 
+def binary_counter():
+    bi_list = []
+    x = 1
+    for i in range(5):
+        bi_list.append(0)
+    print(bi_list)
+
+def generate_binary_list(n):
+  return [bin(i)[2:] for i in range(n + 1)]
+
+
+print(generate_binary_list(32))
