@@ -169,7 +169,6 @@ class Database:
             return False
         days_in_month = self.days_in_month(int(dob[0]), int(dob[2]))
         if int(dob[1]) > days_in_month or int(dob[1]) == 0:
-            print('ran')
             return False
         else:
             return True
