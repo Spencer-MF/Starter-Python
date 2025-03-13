@@ -45,13 +45,17 @@ class Database:
                         print('Enter a vaild date\n')
                     else:
                         break
+                self.data_log(in_dob, data_type)
             else:
                 in_data = input()
-                if in_data == '':
-                    in_data = None
-                data = self.data_directory[data_type]
-                name = self.names_list[-1]
-                data[name] = in_data
+                self.data_log(in_data, data_type)
+
+    def data_log(self, in_data, data_type):
+        if in_data == '':
+            in_data = None
+        data = self.data_directory[data_type]
+        name = self.names_list[-1]
+        data[name] = in_data
 
     def find_info_person(self):
         print('What person would you like to finds info')
@@ -159,7 +163,7 @@ class Database:
         dd = self.digits_in_number(int(dob[1]))
         if len(dob) != 3:
             return False
-        elif mm != 2 or dd != 2:
+        elif mm > 2 or dd > 2:
             return False
         elif int(dob[0]) > 12 or int(dob[0]) == 0:
             return False
