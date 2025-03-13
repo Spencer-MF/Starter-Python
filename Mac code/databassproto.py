@@ -5,6 +5,7 @@ import sys
 import signal
 import os
 import fileinput
+import math
 from datetime import date
 from hashlib import sha256
 from Crypto.Cipher import AES
@@ -36,9 +37,15 @@ class Database:
                 self.names_list.append(in_name)
                 data = self.data_directory[data_type]
                 data[in_name] = in_name
+            elif data_type == 'Date of Birth':
+                print('mm-dd-yyyy format (with dashes)')
+                while True:
+                    in_dob = input()
+                    if not self.dob_verify(in_dob):
+                        print('Enter a vaild date\n')
+                    else:
+                        break
             else:
-                if data_type == 'Date of Birth':
-                    print('mm-dd-yyyy format (with dashes)')
                 in_data = input()
                 if in_data == '':
                     in_data = None
@@ -145,6 +152,24 @@ class Database:
         del self.names[name]
 
         return new_name
+    
+    def dob_verify(self, dob):
+        dob = dob.split('-')
+        mm = self.digits_in_number(int(dob[0]))
+        dd = self.digits_in_number(int(dob[1]))
+        if len(dob) != 3:
+            return False
+        elif mm != 2 or dd != 2:
+            return False
+        elif int(dob[0]) > 12 or int(dob[0]) == 0:
+            return False
+        days_in_month = self.days_in_month(int(dob[0]), int(dob[2]))
+        if int(dob[1]) > days_in_month or int(dob[1]) == 0:
+            print('ran')
+            return False
+        else:
+            return True
+
                 
     def age_calc(self, name):
         dob = str(self.dob[name])
@@ -154,12 +179,13 @@ class Database:
         delta_year = int(today_list[0]) - int(dob[2])
         delta_month = int(today_list[1]) - int(dob [0])
         delta_day = int(today_list[2]) - int(dob[1])
-        if delta_month < 0 and delta_day < 0:
+        if delta_month < 1 or delta_day < 0:
             delta_year -= 1
         return delta_year, delta_month, delta_day
         
     def time_till_birthday(self, name):
         dy, dm, dd = self.age_calc(name)
+        dy += 1
         dm *= -1
         dd *= -1
         if dm < 0:
@@ -169,8 +195,8 @@ class Database:
             dd += self.month()
         elif dd < 0:
             dm -= 1
-            dd -= self.month()
-        return dm, dd, dy + 1
+            dd += self.month()
+        return dm, dd, dy
 
     def closest_birthday(self):
         min_time = []
@@ -195,7 +221,7 @@ class Database:
         for i in range(x_way_tie + 1):    
             name = min_time_name[-(i + 1)]
             min_time_name_tie.append(name)
-            mm, dd, turing_years_old = self.time_till_birthday(name)
+            mm, dd, turing_years_old  = self.time_till_birthday(name)
             ages.append(turing_years_old)
         name = min_time_name[-1]
         mm, dd, dy = self.time_till_birthday(name)
@@ -261,6 +287,18 @@ class Database:
             return 28
         return 30
     
+    def days_in_month(self, month, year):
+        mm = month
+        if mm in [1, 3, 5, 7, 8, 12]:
+            return 31
+        elif mm in [2]:
+            if self.was_leap_year(year):
+                return 29
+            return 28
+        else:
+            return 30
+
+    
     def month_to_day(self, dm):
         days = 0
         today = str(date.today())
@@ -295,7 +333,21 @@ class Database:
         elif yyyy % 400 == 0:
             return True
         return False
-
+    
+    def was_leap_year(self, year):
+        yyyy = year
+        yy00 = yyyy % 100
+        if yy00 != 0:
+            if yyyy % 4 == 0:
+                return True
+        elif yyyy % 400 == 0:
+            return True
+        return False
+    
+    def digits_in_number(self, num):
+        number_of_digits = math.floor(math.log10(num)) + 1
+        return number_of_digits
+    
 class FrontEnd:
 
     def __init__(self, db, im, ed):
@@ -382,7 +434,7 @@ class FrontEnd:
             if name in db.names_list:
                 age, m, d = db.age_calc(name)
                 print(f'{name} is {age} years old')
-                cont = input("To find another person's agepress Enter: ")
+                cont = input("To find another person's age press Enter: ")
             else:
                 print(f'{name} not found in database')
             if cont != '':
