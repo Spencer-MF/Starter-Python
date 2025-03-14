@@ -172,7 +172,6 @@ class Database:
             return False
         else:
             return True
-
                 
     def age_calc(self, name):
         dob = str(self.dob[name])
@@ -320,10 +319,16 @@ class Database:
         return days
     
     def years_to_day(self, dy):
-        if self.leap_year():
-            return 366
+        if dy != None:
+            if self.was_leap_year(dy):
+                return 366
+            else:
+                return 365   
         else:
-            return 365
+            if self.leap_year():
+                return 366
+            else:
+                return 365
     
     def leap_year(self):
         today = str(date.today())
@@ -353,10 +358,11 @@ class Database:
     
 class FrontEnd:
 
-    def __init__(self, db, im, ed):
+    def __init__(self, db, im, ed, ex):
         self.db = db
         self.im = im
         self.ed = ed
+        self.ex = ex
 
     def control_panal(self):
         print('This is the control panal for this database')
@@ -364,6 +370,7 @@ class FrontEnd:
         print("if you would like to see the full database press 3 if you would like to find a spasific person info press 4")
         print('if you would like to know the amount of entries press 5 if you would like to edit a person press 6')
         print('if you would like to know about the ages of the people press 7 if you would like to change the password on a file press 8')
+        print('if you would like to import a file in plain text press 9 if you would like to export a file to plain text press 10')
         print('if you would like to import a file (this file has to be structed for this database) press 0')
         while True:
             admin_choice = input()
@@ -383,6 +390,11 @@ class FrontEnd:
                 self.ages_control_panal()
             elif admin_choice == '8':
                 self.change_password()
+            elif admin_choice == '9':
+                im.plaintext = True
+                im.what_file('read')
+            elif admin_choice == '10':
+                ex.export_to_plaintext()
             elif admin_choice == '0':
                 im.what_file('read')
             else:
@@ -510,6 +522,7 @@ class Export:
         self.current_date = None
         self.password = None
         self.password_switch = False
+        self.plaintext = False
 
     def export_control(self):
         print('Would you like to export data\n Yes or No')
@@ -522,6 +535,10 @@ class Export:
                 cont = input('press enter to accept')
                 if cont == '':
                     break
+    
+    def export_to_plaintext(self):
+        self.plaintext = True
+        self.export_data_choice()
 
     def export_data_choice(self):
         print('Would you like to export to a new or existing file?')
@@ -533,29 +550,36 @@ class Export:
         
     def export_data_new(self):
         file_name = input('what would you like to name the file?\n')
-        password_control = input('Would you like to password protect your file\nYes or No\n')
-        if password_control in ['y', 'Y', 'yes', 'Yes']:
-            self.password = input('Enter your passowrd:\n')
-            self.password_switch = True
-            self.password = sha256(self.password.encode('utf-8')).hexdigest()
-            db.password_manager[file_name] = self.password
+        if not self.plaintext:
+            password_control = input('Would you like to password protect your file\nYes or No\n')
+            if password_control in ['y', 'Y', 'yes', 'Yes']:
+                self.password = input('Enter your passowrd:\n')
+                self.password_switch = True
+                self.password = sha256(self.password.encode('utf-8')).hexdigest()
+                db.password_manager[file_name] = self.password
         open(f'{file_name}.txt', 'w')
         self.write_full_table(file_name)
-        ed.encrypt_master(file_name)
+        if not self.plaintext:
+            ed.encrypt_master(file_name)
 
     def export_data_existing(self):
         file_name = input('What is the name of the file you want to save to?\n')
-        ed.decrypt_file_master(file_name)
-        if ed.confirm_file:
-            if ed.password_fail:
-                self.export_control()
+        if not self.plaintext:
+            ed.decrypt_file_master(file_name)
+            if ed.confirm_file:
+                if ed.password_fail:
+                    self.export_control()
+                self.write_full_table(file_name)
+                ed.encrypt_master(file_name)
+        else:
             self.write_full_table(file_name)
-            ed.encrypt_master(file_name)
+        
 
     def write_full_table(self, file_name):
         self.get_time_and_date()
         with open(f'{file_name}.txt', 'a') as f:
-            f.write(ed.file_format_encode)
+            if not self.plaintext:
+                f.write(ed.file_format_encode)
             if self.password_switch:
                 f.write(f'\n\n{self.current_date} {self.current_time}\n')
                 f.write(f'{file_name}: {self.password}\n\n')
@@ -592,17 +616,25 @@ class ImportFile:
         self.ed = ed
         self.file = None
         self.question_type = False
+        self.plaintext = False
 
     def what_file(self, question_txt):
         file_name = input(f'What is the name of the file that you would like to {question_txt}?\n')
         if question_txt != 'read':
             self.question_type = True
         self.file = file_name
-        ed.decrypt_file_master(file_name)
-        if ed.confirm_file:
-            with open(f'{file_name}.txt', 'r') as f:
-                lines = f.readlines()
-                self.populate_database(lines, file_name)            
+        if not self.plaintext:
+            ed.decrypt_file_master(file_name)
+            if ed.confirm_file:
+                self.run_populate(file_name)
+        else:
+            self.question_type = True
+            self.run_populate(file_name)      
+
+    def run_populate(self, file_name):  
+        with open(f'{file_name}.txt', 'r') as f:
+                    lines = f.readlines()
+                    self.populate_database(lines, file_name)          
 
     def populate_database(self, lines, file_name):
         current_name = None
@@ -786,7 +818,7 @@ te = TimeoutException()
 ed = EncryptDecrypt(db, te)
 ex = Export(db, ed)
 im = ImportFile(db, ed)
-fr = FrontEnd(db, im, ed)
+fr = FrontEnd(db, im, ed, ex)
 def main():
     fr.control_panal()
     ex.export_control()
