@@ -22,6 +22,8 @@ class Database:
         self.phone_numbers = {}
         self.dob = {}
         self.notes = {}
+        self.ugd_type = []
+        self.ugd_point_count = 0
         self.data_directory = {'Name':self.names, 'Phonenumber':self.phone_numbers, 'Date of Birth':self.dob, 'Notes': self.notes}
 
         self.password_manager = {}
@@ -157,6 +159,22 @@ class Database:
 
         return new_name
     
+    def add_catagory(self):
+        print('What is the name of the catagory you would like to add?')
+        catagory = input()
+        self.ugd_type.append(catagory)
+        catagory_data = {}
+        self.data_directory[catagory] = catagory_data
+
+    def back_fill_data(self):
+        data_dict = self.data_directory[self.ugd_type[self.ugd_point_count]]
+        for names in self.names_list:
+            print(f'What is {names} {self.ugd_type[self.ugd_point_count]}?')
+            data = input()
+            data_dict[names] = data
+        self.data_directory[self.ugd_type[self.ugd_point_count]] = data_dict
+        print(self.data_directory)
+        
     def dob_verify(self, dob):
         dob = dob.split('-')
         mm = self.digits_in_number(int(dob[0]))
@@ -370,7 +388,8 @@ class FrontEnd:
         print("if you would like to see the full database press 3 if you would like to find a spasific person info press 4")
         print('if you would like to know the amount of entries press 5 if you would like to edit a person press 6')
         print('if you would like to know about the ages of the people press 7 if you would like to change the password on a file press 8')
-        print('if you would like to import a file in plain text press 9 if you would like to export a file to plain text press 10')
+        print('if you would like to import a plain text file press 9 if you would like to export a file to plain text press 10')
+        print('if you would like to manage the database press a')
         print('if you would like to import a file (this file has to be structed for this database) press 0')
         while True:
             admin_choice = input()
@@ -391,12 +410,13 @@ class FrontEnd:
             elif admin_choice == '8':
                 self.change_password()
             elif admin_choice == '9':
-                im.plaintext = True
-                im.what_file('read')
+                self.plain_text_import()
             elif admin_choice == '10':
                 ex.export_to_plaintext()
             elif admin_choice == '0':
                 im.what_file('read')
+            elif admin_choice == 'a':
+                self.database_system_control_panal()
             else:
                 print('Invaid input')
             cont = input('If you would like to continue press enter: ')
@@ -512,6 +532,26 @@ class FrontEnd:
     # Merge the lists
         merged_list = [f'{list1[i]} turing {list2[i]} years old' for i in range(len(list1))]
         return merged_list
+    
+    def plain_text_import(self):
+        im.plaintext = True
+        im.what_file('read')
+
+    def database_system_control_panal(self):
+        print('If you would like to add a data catagory to the database press 0')
+        while True:
+            admin_choice = input()
+            if admin_choice == '0':
+                self.manage_catagory()
+            else:
+                print('Invaid input')
+            cont = input('If you would like to continue press enter: ')
+            if cont != '':
+                break
+    
+    def manage_catagory(self):
+        db.add_catagory()
+        db.back_fill_data()
 
 class Export:
 
@@ -525,13 +565,13 @@ class Export:
         self.plaintext = False
 
     def export_control(self):
-        print('Would you like to export data\n Yes or No')
+        print('Would you like to save data\n Yes or No')
         while True:
             export = input()
             if export in ['yes', 'y', 'Y', 'Yes']:
                 self.export_data_choice()
             else:
-                print('All data not exported will be deleted when this program closes')
+                print('All data not saved will be deleted when this program closes')
                 cont = input('press enter to accept')
                 if cont == '':
                     break
@@ -541,7 +581,7 @@ class Export:
         self.export_data_choice()
 
     def export_data_choice(self):
-        print('Would you like to export to a new or existing file?')
+        print('Would you like to save to a new or existing file?')
         file_choice = input()
         if file_choice in ['New', 'new', 'n', 'N']:
             self.export_data_new()
