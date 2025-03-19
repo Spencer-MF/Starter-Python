@@ -179,4 +179,15 @@ def generate_binary_list(n):
   return [bin(i)[2:] for i in range(n + 1)]
 
 
-print(generate_binary_list(32))
+#print(generate_binary_list(32))
+
+def list_to_list(lst):
+        if not lst:
+            return ""
+        elif len(lst) == 1:
+            return lst[0]
+        else:
+            return ', '.join(lst[:-1]) + ", and " + lst[-1]
+        
+#lst = ['Bitter almond oil', 'Bitter cucumber', 'Bitter melon', 'Black beans', 'Black cumin', 'Black or purple rice', 'Black pepper', 'Black tea', 'Blackberries', 'Blueberries', 'Bok choy']
+

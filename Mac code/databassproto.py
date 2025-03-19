@@ -76,13 +76,17 @@ class Database:
 
     def edit_info(self):
         hit = 0
+        costom = self.list_to_list(self.ugd_type)
+        costom_nums = self.ug_catagory_numbers()
+        print(costom_nums)
+        print(self.ugd_type)
         while True:
             name = input("What person's info would you like to edit?\n")
             if name in self.names_list:
                 break
             else:
                 print('Invalid name try again')
-        print('What type of info would you like to change?\n Name, Phonenumber, Date of Birth, or Notes\n')
+        print(f'What type of info would you like to change?\n Name, Phonenumber, Date of Birth, Notes, {costom}\n')
         invalid = True
         while invalid:
             data_type = self.multi_choice()
@@ -99,17 +103,44 @@ class Database:
             if self.lists_overlap(data_type, ['4', 'Notes', 'notes', 'note', 'Note']):
                 self.notes_change(name)
                 hit += 1
+            if self.lists_overlap(data_type, self.ugd_type):
+                catagory = self.what_overlaps(data_type, self.ugd_type)
+                self.costom_change_with_catagory(catagory, name)
+                hit += 1
+            if self.lists_overlap(data_type, costom_nums):
+                index = self.what_overlaps(data_type, costom_nums)
+                print(index)
+                self.costom_change_with_index(index, name)
+                hit += 1
             if hit == 0:
                 print('Invalid input try again')
                 invalid = True
             else:
                 break
     
-    def lists_overlap(self,a, b):
+    def lists_overlap(self, a, b):
         for i in a:
             if i in b:
               return True
         return False
+    
+    def what_overlaps(self, a, b):
+        cats = []
+        for i in a:
+            if i in b:
+                cats.append(i)
+        return cats
+
+    def costom_change_with_catagory(self, catagory, name):
+        for items in catagory:
+            self.change_ugd_data(items, name)
+
+    def costom_change_with_index(self, index, name):
+        for items in index:
+            i = int(items) - 5
+            print(i)
+            catagory = self.ugd_type[i]
+            self.change_ugd_data(catagory, name)
 
     def number_change(self, name):
         new_number = input(f"What would you like to change {name}'s phonenumber to?\n")
@@ -160,11 +191,26 @@ class Database:
         return new_name
     
     def add_catagory(self):
-        print('What is the name of the catagory you would like to add?')
-        catagory = input()
-        self.ugd_type.append(catagory)
-        catagory_data = {}
-        self.data_directory[catagory] = catagory_data
+        dublicate = False
+        while not dublicate:
+            print('What is the name of the catagory you would like to add?')
+            catagory = input()
+            dublicate = self.update_database_catagory(catagory)
+            if dublicate:
+                print(f'{catagory} is a catagory that already exists')
+
+    def update_database_catagory(self, catagory):
+        if catagory not in self.ugd_type:
+            self.ugd_type.append(catagory)
+            catagory_data = {}
+            self.data_directory[catagory] = catagory_data
+        else:
+            True
+
+    def import_coutom_data(self, catagory, name, data):
+        update_dict = self.data_directory[catagory]
+        update_dict[name] = data
+        self.data_directory[catagory] = update_dict
 
     def back_fill_data(self):
         data_dict = self.data_directory[self.ugd_type[self.ugd_point_count]]
@@ -173,7 +219,11 @@ class Database:
             data = input()
             data_dict[names] = data
         self.data_directory[self.ugd_type[self.ugd_point_count]] = data_dict
-        print(self.data_directory)
+        self.ugd_point_count += 1
+
+    def change_ugd_data(self, catagory, name):
+        new_data = input(f"What would you like to change {name}'s {catagory} to?\n")
+        self.import_coutom_data(catagory, name, new_data)
         
     def dob_verify(self, dob):
         dob = dob.split('-')
@@ -374,6 +424,21 @@ class Database:
         number_of_digits = math.floor(math.log10(num)) + 1
         return number_of_digits
     
+    def list_to_list(self, lst):
+        if not lst:
+            return ""
+        elif len(lst) == 1:
+            return lst[0]
+        else:
+            return ', '.join(lst[:-1]) + ", or " + lst[-1]
+        
+    def ug_catagory_numbers(self):
+        lst = []
+        for i in range(len(self.ugd_type)):
+            num = str(i + 5)
+            lst.append(num)
+        return lst
+    
 class FrontEnd:
 
     def __init__(self, db, im, ed, ex):
@@ -382,7 +447,7 @@ class FrontEnd:
         self.ed = ed
         self.ex = ex
 
-    def control_panal(self):
+    def menue_text(self):
         print('This is the control panal for this database')
         print('If you would like to add people press 1 if you would like to remove people press 2')
         print("if you would like to see the full database press 3 if you would like to find a spasific person info press 4")
@@ -391,6 +456,9 @@ class FrontEnd:
         print('if you would like to import a plain text file press 9 if you would like to export a file to plain text press 10')
         print('if you would like to manage the database press a')
         print('if you would like to import a file (this file has to be structed for this database) press 0')
+
+    def control_panal(self):
+        self.menue_text()
         while True:
             admin_choice = input()
             if admin_choice == '1':
@@ -545,7 +613,7 @@ class FrontEnd:
                 self.manage_catagory()
             else:
                 print('Invaid input')
-            cont = input('If you would like to continue press enter: ')
+            cont = input('If you would like to continue in this menue press enter: ')
             if cont != '':
                 break
     
@@ -699,6 +767,12 @@ class ImportFile:
             elif line.startswith('Notes:'):
                 if current_name:
                     db.notes[current_name] = line.split(':')[1].strip()
+            else:
+                if current_name:
+                    new_cat = line.split(':')[0].strip()
+                    cat_data = line.split(':')[1].strip()
+                    db.update_database_catagory(new_cat)
+                    db.import_coutom_data(new_cat, current_name, cat_data)
         if not self.question_type:
             os.remove(f'{file_name}.txt')
             self.question_type = False
