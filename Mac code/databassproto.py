@@ -78,8 +78,6 @@ class Database:
         hit = 0
         costom = self.list_to_list(self.ugd_type)
         costom_nums = self.ug_catagory_numbers()
-        print(costom_nums)
-        print(self.ugd_type)
         while True:
             name = input("What person's info would you like to edit?\n")
             if name in self.names_list:
@@ -109,7 +107,6 @@ class Database:
                 hit += 1
             if self.lists_overlap(data_type, costom_nums):
                 index = self.what_overlaps(data_type, costom_nums)
-                print(index)
                 self.costom_change_with_index(index, name)
                 hit += 1
             if hit == 0:
