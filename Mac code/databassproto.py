@@ -237,7 +237,22 @@ class Database:
             return False
         else:
             return True
-                
+        
+    def has_mataching_data(self, catagory):
+        data_lst = []
+        names = {}
+        cat = self.data_directory[catagory]
+        for name, data in cat.items():
+            if data not in data_lst:
+                data_lst.append(data)
+                names_lst = [name]
+                names[data] = names_lst
+            else:
+                names_lst = names[data]
+                names_lst.append(name)
+                names[data] = names_lst
+        return names
+                      
     def age_calc(self, name):
         dob = str(self.dob[name])
         today = str(date.today())
@@ -364,7 +379,6 @@ class Database:
             return 28
         else:
             return 30
-
     
     def month_to_day(self, dm):
         days = 0
@@ -426,8 +440,20 @@ class Database:
             return ""
         elif len(lst) == 1:
             return lst[0]
+        elif len(lst) == 1:
+            return ', '.join(lst[:-1]) + " or " + lst[-1]
         else:
             return ', '.join(lst[:-1]) + ", or " + lst[-1]
+        
+    def list_to_list_and(self, lst):
+        if not lst:
+            return ""
+        elif len(lst) == 1:
+            return lst[0]
+        elif len(lst) == 2:
+            return ', '.join(lst[:-1]) + " and " + lst[-1]
+        else:
+            return ', '.join(lst[:-1]) + ", and " + lst[-1]
         
     def ug_catagory_numbers(self):
         lst = []
@@ -446,51 +472,68 @@ class FrontEnd:
 
     def menue_text(self):
         print('This is the control panal for this database')
-        print('If you would like to add people press 1 if you would like to remove people press 2')
-        print("if you would like to see the full database press 3 if you would like to find a spasific person info press 4")
-        print('if you would like to know the amount of entries press 5 if you would like to edit a person press 6')
-        print('if you would like to know about the ages of the people press 7 if you would like to change the password on a file press 8')
-        print('if you would like to import a plain text file press 9 if you would like to export a file to plain text press 10')
-        print('if you would like to manage the database press a')
+        print("if you would like to see the full database press 1")
+        print('if you would like to import a plain text file press 2 if you would like to export a file to plain text press 3')
         print('if you would like to import a file (this file has to be structed for this database) press 0')
+        print('if you would like to search the database press "s"')
+        print('if you would like to manage the database press "a"')
+
+    def search_text(self):
+        print('if you would like to know the amount of entries press 0')
+        print('if you would like to find a spasific person info press 1')
+        print('if you would like to know all the people who have matching data for a spasific catagory press 2')
+        print('if you would like to know about the ages of the people press 3')
+
+    def age_text(self):
+        print('If you would like to know the ages of people press 1 if you would like to know the time a persons next birthday press 2')
+        print('if you would like to know the people in any age range press 3 if you like to know the closest birthday to today press 4')
+
+    def database_text(self):
+        print('If you would like to add people press 0 if you would like to remove people press 1 if you would like to edit a person press 2')
+        print('If you would like to add a data catagory to the database press 3 if you would like to change the password on a file press 4')
 
     def control_panal(self):
         self.menue_text()
         while True:
             admin_choice = input()
             if admin_choice == '1':
-                self.add_people()
-            elif admin_choice == '2':
-                self.remove_people()
-            elif admin_choice == '3':
                 db.print_full_table()
-            elif admin_choice == '4':
-                db.find_info_person()
-            elif admin_choice == '5':
-                db.num_entries()
-            elif admin_choice == '6':
-                self.edit_people()
-            elif admin_choice == '7':
-                self.ages_control_panal()
-            elif admin_choice == '8':
-                self.change_password()
-            elif admin_choice == '9':
+            elif admin_choice == '2':
                 self.plain_text_import()
-            elif admin_choice == '10':
+            elif admin_choice == '3':
                 ex.export_to_plaintext()
             elif admin_choice == '0':
                 im.what_file('read')
             elif admin_choice == 'a':
                 self.database_system_control_panal()
+            elif admin_choice == 's':
+                self.search_database()
             else:
                 print('Invaid input')
             cont = input('If you would like to continue press enter: ')
             if cont != '':
                 break
 
+    def search_database(self):
+        self.search_text()
+        while True:
+            admin_choice = input()
+            if admin_choice == '0':
+                db.find_info_person()
+            elif admin_choice == '1':
+                db.num_entries()
+            elif admin_choice == '2':
+                self.with_matching_catagory()
+            elif admin_choice == '3':
+                self.ages_control_panal()
+            else:
+                print('Invaid input')
+            cont = input('If you would like to continue in this menue press enter: ')
+            if cont != '':
+                break
+
     def ages_control_panal(self):
-        print('If you would like to know the ages of people press 1 if you would like to know the time a persons next birthday press 2')
-        print('if you would like to know the people in any age range press 3 if you like to know the closest birthday to today press 4')
+        self.age_text()
         while True:
             admin_choice = input()
             if admin_choice == '1':
@@ -501,6 +544,26 @@ class FrontEnd:
                 self.people_age_range()
             elif admin_choice == '4':
                 self.next_birthday()
+            else:
+                print('Invaid input')
+            cont = input('If you would like to continue in this menue press enter: ')
+            if cont != '':
+                break
+    
+    def database_system_control_panal(self):
+        self.database_text()
+        while True:
+            admin_choice = input()
+            if admin_choice == '0':
+                self.add_people()
+            elif admin_choice == '1':
+                self.remove_people()
+            elif admin_choice == '2':
+                self.edit_people()
+            elif admin_choice == '3':
+                self.manage_catagory()
+            elif admin_choice == '4':
+                self.change_password()
             else:
                 print('Invaid input')
             cont = input('If you would like to continue in this menue press enter: ')
@@ -601,22 +664,23 @@ class FrontEnd:
     def plain_text_import(self):
         im.plaintext = True
         im.what_file('read')
-
-    def database_system_control_panal(self):
-        print('If you would like to add a data catagory to the database press 0')
-        while True:
-            admin_choice = input()
-            if admin_choice == '0':
-                self.manage_catagory()
-            else:
-                print('Invaid input')
-            cont = input('If you would like to continue in this menue press enter: ')
-            if cont != '':
-                break
     
     def manage_catagory(self):
         db.add_catagory()
         db.back_fill_data()
+    
+    def with_matching_catagory(self):
+        comma_or_not = ', '
+        cat_list = db.list_to_list(db.ugd_type)
+        if cat_list == '':
+            comma_or_not = ' '
+        print('What is the catagory that you would like to find mataching data for?')
+        print(f'These are your options Phonenumber, Date of Birth, Notes{comma_or_not}{cat_list}')
+        catagory = input()
+        sorted_names = db.has_mataching_data(catagory)
+        for catagories, names in sorted_names.items():
+            names = db.list_to_list_and(names)
+            print(f'{catagories}: {names}')
 
 class Export:
 
