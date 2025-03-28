@@ -483,6 +483,7 @@ class FrontEnd:
         print('if you would like to find a spasific person info press 1')
         print('if you would like to know all the people who have matching data for a spasific catagory press 2')
         print('if you would like to know about the ages of the people press 3')
+        print('if you would like to do a two catagory search press 4')
 
     def age_text(self):
         print('If you would like to know the ages of people press 1 if you would like to know the time a persons next birthday press 2')
@@ -526,6 +527,8 @@ class FrontEnd:
                 self.with_matching_catagory()
             elif admin_choice == '3':
                 self.ages_control_panal()
+            elif admin_choice == '4':
+                self.two_cat_matching()
             else:
                 print('Invaid input')
             cont = input('If you would like to continue in this menue press enter: ')
@@ -681,6 +684,17 @@ class FrontEnd:
         for catagories, names in sorted_names.items():
             names = db.list_to_list_and(names)
             print(f'{catagories}: {names}')
+
+    def two_cat_matching(self):
+        print('what two pieces of information would you like to sreach between')
+        choices = self.two_choice()
+        
+
+    def two_choice(self):
+        choices = input('Enter the choices you want seperated by three dashes (---):\n')
+        choices_lst = choices.split('---')
+        return choices_lst
+
 
 class Export:
 
