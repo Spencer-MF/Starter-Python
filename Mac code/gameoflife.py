@@ -36,8 +36,7 @@ class game_set():
         for i in range(len(self.setup_row)):
             row = self.game_board[self.setup_row[i]]
             row[self.setup_col[i]] = 1
-            self.game_board[self.setup_col[i]] = row
-        print(self.game_board)      
+            self.game_board[self.setup_col[i]] = row     
 
     def start(self):
         self.gameboard_handler()
@@ -53,11 +52,13 @@ class logic():
 
     def game(self):
         self.import_board()
+        self.display_board()
         for i in range(3):
             self.main_loop()
     
     def import_board(self):
         self.current_board = gs.game_board
+        self.future_board = self.current_board
 
     def main_loop(self):
         self.check_board()
@@ -68,8 +69,8 @@ class logic():
         for rows in self.current_board.keys():
             row = self.current_board[rows]
             for i in range(len(row)):
-                n = self.board_check(rows, i)
-                self.next_board_state(rows, i, n)
+                n = self.board_check(i, rows)
+                self.next_board_state(i, rows, n)
     
     def board_check(self, off_set_x, off_set_y):
         n_count = 0
@@ -124,11 +125,15 @@ class logic():
         self.current_board = self.future_board
 
     def display_board(self):
-        print(self.current_board)
+        for rows in self.current_board.keys():
+            print(self.current_board[rows])
+            print('\n')
+        print('____________________________')
+        
 
 class screen():
 
-    def __init(self, lg):
+    def __init__(self, lg):
         self.lg = lg
 
 gs = game_set()
