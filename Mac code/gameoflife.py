@@ -29,7 +29,6 @@ class game_set():
             out = input('would you like to end?\npress e to end\n')
             if out == 'e':
                 break
-        self.setup()
             
     
     def setup(self):
@@ -41,6 +40,7 @@ class game_set():
     def start(self):
         self.gameboard_handler()
         self.setup_condition()
+        self.setup()
 
 class logic():
 
@@ -77,9 +77,8 @@ class logic():
         for i in range(3):
             for j in range(3):
                 in_bounds, r, c = self.rectify(i,j ,off_set_x, off_set_y)
-                if in_bounds:
-                    if self.cell_check(r,c):
-                        n_count += 1
+                if in_bounds and self.cell_check(r,c):
+                    n_count += 1
         in_bounds, r, c = self.rectify(1, 1, off_set_x, off_set_y)
         if in_bounds and self.cell_check(r,c):
             n_count -= 1
@@ -125,10 +124,10 @@ class logic():
         self.current_board = self.future_board
 
     def display_board(self):
+        print('____________________________')
         for rows in self.current_board.keys():
             print(self.current_board[rows])
             print('\n')
-        print('____________________________')
         
 
 class screen():
