@@ -129,10 +129,10 @@ class post_process:
 
     def process(self, j):
         self.input_numbers(j)
-        self.perVoids = self.voids / i.totalSize[j]
-        self.perNon_voids = self.perNon_voids / i.totalSize[j]
-        self.voidsZTotal = self.voids / self.ZTotal
-        self.non_voidsZTotal = self.non_voids / self.ZTotal
+        self.perVoids = self.voids / i.totalSize[j] * 100
+        self.perNon_voids = self.perNon_voids / i.totalSize[j] * 100
+        self.voidsZTotal = self.voids / self.ZTotal * 100
+        self.non_voidsZTotal = self.non_voids / self.ZTotal * 100
     
     def output(self):
         with open("pixelcount.txt", "w") as file:
