@@ -1,0 +1,7 @@
+red: circles
+green: non-circles
+image_index: 1
+image0: ROBERTOCORELLA_Al5x1 -1 micon progess colorzied.bmp
+image1: test1.bmp
+image2: NULL
+image3: NULL
