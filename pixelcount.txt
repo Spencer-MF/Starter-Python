@@ -1,0 +1,10 @@
+Aluminum5X1_1um_200X_FC_13 colorized.bmp
+
+circles: 5891
+non-circles: 1962
+whole image: [1920000]
+%circles: 0.30682291666666667%
+%non-circles: 0.0%
+circles%holes: 75.01591748376417%
+non-circles%holes: 24.984082516235834%
+

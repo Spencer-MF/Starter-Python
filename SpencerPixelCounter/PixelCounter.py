@@ -72,8 +72,7 @@ class config:
     
     def str_to_int(self, string):
         return int(string)
-
-                 
+              
 class image_import:
 
     def __init__(self, c):
@@ -149,8 +148,6 @@ class post_process:
     
     def dispaly(self):
         self.output()
-    
-
 
 c = config()
 i = image_import(c)
