@@ -7,7 +7,7 @@ class config:
     def __init__(self):
 
         self.path_base = os.getcwd()
-        self.path = f'{os.getcwd()}/SpencerPixelCounter/'
+        self.path = f'{os.getcwd()}/PixelCounterWithSort/'
         self.file_name = f'{self.path}config.txt'
 
         self.config_dict = {}
@@ -128,8 +128,8 @@ class post_process:
 
     def process(self, j):
         self.input_numbers(j)
-        self.perVoids = self.voids / i.totalSize[j] * 100
-        self.perNon_voids = self.perNon_voids / i.totalSize[j] * 100
+        self.perVoids = self.voids * 100 / i.totalSize[j]
+        self.perNon_voids = self.non_voids * 100 / i.totalSize[j]
         self.voidsZTotal = self.voids / self.ZTotal * 100
         self.non_voidsZTotal = self.non_voids / self.ZTotal * 100
     
