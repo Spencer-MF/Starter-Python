@@ -1,7 +1,7 @@
 red: circles
 green: non-circles
 image_index: 0
-image0: Aluminum5X1_1um_200X_FC_13 colorized.bmp
+image0: ROBERTOCORELLA_Al5x1 -1 micon progess colorzied.bmp
 image1: NULL
 image2: NULL
 image3: NULL

@@ -157,7 +157,7 @@ class sort_image: ##code orginally written by Evan Lu @ https://waffles-codes.gi
     def __init__(self, c, i):
         self.c = c
         self.i = i
-        self.outputpath_base = 'output_sorted_by_hue'
+        self.outputpath_base = 'output_sorted_by_hue_'
 
     def sort_all(self):
         for j in range(c.num_of_images+1):
