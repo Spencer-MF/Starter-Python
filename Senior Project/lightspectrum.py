@@ -8,8 +8,8 @@ IMAGE_HIGHT = 50
 class color_spectrum:
 
     def __init__(self):
-        self.start_wavelength = 365
-        self.end_wavelength = 850
+        self.start_wavelength = 380
+        self.end_wavelength = 730
         self.wavelength_range = self.end_wavelength - self.start_wavelength
         self.wavelength_array = []
         self.rgb_array = []

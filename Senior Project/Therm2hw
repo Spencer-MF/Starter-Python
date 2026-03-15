@@ -1,0 +1,74 @@
+
+import numpy as np
+import matplotlib.pyplot as plt
+"""
+x1 = np.linspace(0,1,501)
+V  = 70 + 58*x1 - x1**2 - 7*x1**3
+V1 = 128 - 2*x1 - 20*x1**2 + 14*x1**3
+V2 = 70 + x1**2 + 14*x1**3
+
+plt.plot(x1, V,  label="V")
+plt.plot(x1, V1, label="V̄1")
+plt.plot(x1, V2, label="V̄2")
+plt.xlabel("x1")
+plt.ylabel("cm³/mol")
+plt.legend()
+plt.grid(True)
+plt.show()
+
+print("V1 =", V[x1.size-1])       # 120
+print("V2 =", V[0])               # 70
+print("V̄1∞ =", V1[0])             # 128
+print("V̄2∞ =", V2[x1.size-1])     # 85
+"""
+
+# Grid
+x1 = np.linspace(0, 1, 501)
+x2 = 1 - x1
+
+# Given molar volume (simplified in x1 form)
+V  = 70 + 58*x1 - x1**2 - 7*x1**3
+
+# Partial molar volumes (from part a)
+Vb1 = 128 - 2*x1 - 20*x1**2 + 14*x1**3   # V̄1
+Vb2 = 70 + x1**2 + 14*x1**3              # V̄2
+
+# Key points
+V2_pure = V[0]        # V at x1=0
+V1_pure = V[-1]       # V at x1=1
+Vb1_inf = Vb1[0]      # V̄1∞ = V̄1 at x1->0
+Vb2_inf = Vb2[-1]     # V̄2∞ = V̄2 at x1->1
+
+# Plot curves
+plt.figure()
+plt.plot(x1, V,   label="V")
+plt.plot(x1, Vb1, label="V̄1")
+plt.plot(x1, Vb2, label="V̄2")
+
+# Annotate points: V1, V2, V̄1∞, V̄2∞
+pts = [
+    ("V2",       0.0, V2_pure),
+    ("V̄1∞",     0.0, Vb1_inf),
+    ("V1",       1.0, V1_pure),
+    ("V̄2∞",     1.0, Vb2_inf),
+]
+
+for name, xx, yy in pts:
+    plt.scatter([xx], [yy], s=50)
+    plt.annotate(f"{name} = {yy:.2f}",
+                 xy=(xx, yy),
+                 xytext=(10, 10) if xx == 0 else (-70, 10),
+                 textcoords="offset points",
+                 arrowprops=dict(arrowstyle="->", lw=1))
+
+plt.xlabel("x1")
+plt.ylabel("cm³/mol")
+plt.title("V, V̄1, V̄2 vs x1")
+plt.grid(True)
+plt.legend()
+plt.show()
+
+print(f"V2 (x1=0)      = {V2_pure:.2f} cm^3/mol")
+print(f"V1 (x1=1)      = {V1_pure:.2f} cm^3/mol")
+print(f"V̄1∞ (x1->0)    = {Vb1_inf:.2f} cm^3/mol")
+print(f"V̄2∞ (x1->1)    = {Vb2_inf:.2f} cm^3/mol")
